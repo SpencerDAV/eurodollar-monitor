@@ -1,0 +1,1498 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Options DB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================================
+   Options DB — Design System
+   Version 0.1.0
+
+   Vendored verbatim from the "Options DB — Design System" style guide
+   (claude.ai/artifact/Qu2iU65GC9ASuVdk1Av9qh). Change it there first, then
+   re-vendor this file: it is the single source of tokens for both pages, and
+   assets.py inlines it into each one.
+
+   Drop-in stylesheet for the options dashboard, the eurodollar monitor, the
+   3D surface viewer overlay and the static export.
+
+   Everything is namespaced: tokens are --od-*, classes are .od-*. Nothing
+   here styles bare elements except :root and a focus ring, so it can sit
+   alongside existing dashboard CSS during migration without a rewrite.
+
+   Theme: light is the base, dark applies on OS preference or by setting
+   data-theme on <html>. Force one with <html data-theme="dark"> — which is
+   what both dashboards should ship with.
+
+   Fonts: IBM Plex Sans + IBM Plex Mono, with system fallbacks so the app
+   still reads correctly offline. Vendor the woff2 files next to three.js
+   rather than relying on a CDN the collector host may not reach.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Tokens — light
+   -------------------------------------------------------------------------- */
+
+:root {
+  color-scheme: light;
+
+  /* Surfaces */
+  --od-bg:           #F1F3F5;
+  --od-bg-sunken:    #E6E9EC;
+  --od-panel:        #FFFFFF;
+  --od-panel-raised: #FAFBFC;
+  --od-panel-inset:  #F4F6F8;
+
+  /* Rules. Hairline is the default divider; strong is reserved for the
+     boundary between independent data sources. */
+  --od-line:        #DCE1E6;
+  --od-line-strong: #BCC6CE;
+
+  /* Text */
+  --od-text:       #10181E;
+  --od-text-dim:   #566772;
+  --od-text-faint: #8496A1;
+  --od-text-on-fill: #FFFFFF;
+
+  /* Accent — live state, funding stress, the one thing asking for attention.
+     Used sparingly: never for decoration, never on more than one element
+     in a viewport. */
+  --od-accent:      #B06A00;
+  --od-accent-soft: #FDF1DC;
+
+  /* Direction axis */
+  --od-up:        #0E8A57;
+  --od-up-soft:   #E2F4EC;
+  --od-down:      #C13A31;
+  --od-down-soft: #FBE9E7;
+
+  /* Volatility axis — deliberately not red/green, so a short-vol row is
+     never misread as a bearish one. */
+  --od-vol-long:       #5A44C4;
+  --od-vol-long-soft:  #EEEAFB;
+  --od-vol-short:      #0A7A8C;
+  --od-vol-short-soft: #E2F3F6;
+
+  /* Neutral / no view */
+  --od-flat:      #6C7C87;
+  --od-flat-soft: #ECEFF1;
+
+  /* Epistemic status */
+  --od-derived:  #5A6B77;
+  --od-proxy:    #8A6D1F;
+  --od-stale:    #8496A1;
+  --od-hatch:    rgba(138, 109, 31, 0.45);
+  --od-null:     #A6B4BD;
+
+  /* Focus */
+  --od-focus: #0A7A8C;
+
+  /* Elevation — light theme only; dark uses raised surfaces instead. */
+  --od-shadow: 0 1px 2px rgba(16, 24, 30, 0.08), 0 4px 12px rgba(16, 24, 30, 0.05);
+
+  /* Type */
+  --od-font-ui:   "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --od-font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", "Cascadia Mono", Consolas, monospace;
+
+  --od-size-micro: 0.6875rem; /* 11px — badge text, axis ticks */
+  --od-size-small: 0.75rem;   /* 12px — table body, dense labels */
+  --od-size-base:  0.8125rem; /* 13px — UI default */
+  --od-size-lede:  0.9375rem; /* 15px — panel intros, callout body */
+  --od-size-h3:    1.125rem;  /* 18px */
+  --od-size-h2:    1.5rem;    /* 24px */
+  --od-size-h1:    2.125rem;  /* 34px */
+  --od-size-num:   1.75rem;   /* 28px — headline readouts */
+
+  --od-leading-tight: 1.2;
+  --od-leading-data:  1.35;
+  --od-leading-body:  1.55;
+
+  --od-tracking-tight: -0.011em;
+  --od-tracking-wide:  0.02em;
+
+  /* Space — 4px grid */
+  --od-s1: 0.25rem;
+  --od-s2: 0.5rem;
+  --od-s3: 0.75rem;
+  --od-s4: 1rem;
+  --od-s5: 1.5rem;
+  --od-s6: 2rem;
+  --od-s7: 3rem;
+
+  /* Density — row height and cell padding swap together. */
+  --od-row-h:    1.625rem;
+  --od-cell-y:   0.25rem;
+  --od-cell-x:   0.625rem;
+
+  --od-radius:       2px;
+  --od-radius-pill:  999px;
+  --od-border:       1px;
+
+  --od-ease: cubic-bezier(0.2, 0, 0.13, 1);
+  --od-dur:  120ms;
+}
+
+/* --------------------------------------------------------------------------
+   2. Tokens — dark
+   -------------------------------------------------------------------------- */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --od-bg:           #0A1117;
+    --od-bg-sunken:    #060C11;
+    --od-panel:        #101A21;
+    --od-panel-raised: #17232C;
+    --od-panel-inset:  #0C151B;
+
+    --od-line:        #1E2C36;
+    --od-line-strong: #31434F;
+
+    --od-text:       #DBE5EB;
+    --od-text-dim:   #8DA1AE;
+    --od-text-faint: #5E7381;
+    --od-text-on-fill: #0A1117;
+
+    --od-accent:      #F0A93C;
+    --od-accent-soft: #2A2013;
+
+    --od-up:        #3ECF8E;
+    --od-up-soft:   #0F2A21;
+    --od-down:      #F0665E;
+    --od-down-soft: #2C1614;
+
+    --od-vol-long:       #9B87F5;
+    --od-vol-long-soft:  #1D1934;
+    --od-vol-short:      #2FB8CC;
+    --od-vol-short-soft: #0C2730;
+
+    --od-flat:      #7C909D;
+    --od-flat-soft: #16212A;
+
+    --od-derived:  #8DA1AE;
+    --od-proxy:    #D9A84A;
+    --od-stale:    #5E7381;
+    --od-hatch:    rgba(217, 168, 74, 0.35);
+    --od-null:     #4C606D;
+
+    --od-focus: #5FD3E8;
+
+    --od-shadow: none;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --od-bg:           #0A1117;
+  --od-bg-sunken:    #060C11;
+  --od-panel:        #101A21;
+  --od-panel-raised: #17232C;
+  --od-panel-inset:  #0C151B;
+
+  --od-line:        #1E2C36;
+  --od-line-strong: #31434F;
+
+  --od-text:       #DBE5EB;
+  --od-text-dim:   #8DA1AE;
+  --od-text-faint: #5E7381;
+  --od-text-on-fill: #0A1117;
+
+  --od-accent:      #F0A93C;
+  --od-accent-soft: #2A2013;
+
+  --od-up:        #3ECF8E;
+  --od-up-soft:   #0F2A21;
+  --od-down:      #F0665E;
+  --od-down-soft: #2C1614;
+
+  --od-vol-long:       #9B87F5;
+  --od-vol-long-soft:  #1D1934;
+  --od-vol-short:      #2FB8CC;
+  --od-vol-short-soft: #0C2730;
+
+  --od-flat:      #7C909D;
+  --od-flat-soft: #16212A;
+
+  --od-derived:  #8DA1AE;
+  --od-proxy:    #D9A84A;
+  --od-stale:    #5E7381;
+  --od-hatch:    rgba(217, 168, 74, 0.35);
+  --od-null:     #4C606D;
+
+  --od-focus: #5FD3E8;
+
+  --od-shadow: none;
+}
+
+/* Density: comfortable is the default above; compact is for chain tables
+   and anything with more than ~20 rows on screen. */
+:root[data-density="compact"] {
+  --od-row-h:  1.375rem;
+  --od-cell-y: 0.125rem;
+  --od-cell-x: 0.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   3. Base
+   -------------------------------------------------------------------------- */
+
+.od-root {
+  background: var(--od-bg);
+  color: var(--od-text);
+  font-family: var(--od-font-ui);
+  font-size: var(--od-size-base);
+  line-height: var(--od-leading-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+.od-root *,
+.od-root *::before,
+.od-root *::after { box-sizing: border-box; }
+
+:where(.od-root) :focus-visible {
+  outline: 2px solid var(--od-focus);
+  outline-offset: 2px;
+  border-radius: var(--od-radius);
+}
+
+/* --------------------------------------------------------------------------
+   4. Type
+   -------------------------------------------------------------------------- */
+
+.od-h1 { font-size: var(--od-size-h1); line-height: var(--od-leading-tight); letter-spacing: var(--od-tracking-tight); font-weight: 600; margin: 0; }
+.od-h2 { font-size: var(--od-size-h2); line-height: var(--od-leading-tight); letter-spacing: var(--od-tracking-tight); font-weight: 600; margin: 0; }
+.od-h3 { font-size: var(--od-size-h3); line-height: var(--od-leading-tight); font-weight: 600; margin: 0; }
+
+.od-body  { font-size: var(--od-size-base); max-width: 68ch; margin: 0; }
+.od-lede  { font-size: var(--od-size-lede); line-height: var(--od-leading-body); color: var(--od-text-dim); max-width: 68ch; margin: 0; }
+.od-small { font-size: var(--od-size-small); color: var(--od-text-dim); margin: 0; }
+.od-micro { font-size: var(--od-size-micro); color: var(--od-text-faint); letter-spacing: var(--od-tracking-wide); margin: 0; }
+
+/* Numbers. Tabular figures everywhere, so columns align and a changing
+   value doesn't reflow the row. */
+.od-n {
+  font-family: var(--od-font-data);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "zero" 1;
+  letter-spacing: 0;
+}
+
+.od-n-lg {
+  font-family: var(--od-font-data);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "zero" 1;
+  font-size: var(--od-size-num);
+  line-height: var(--od-leading-tight);
+  font-weight: 500;
+}
+
+/* Unit suffixes sit quieter than the figure they qualify. */
+.od-unit { color: var(--od-text-faint); font-size: 0.8em; margin-left: 0.15em; }
+
+/* --------------------------------------------------------------------------
+   5. Semantic value colouring
+
+   Two independent axes. Direction uses the conventional green/red; vol uses
+   violet/teal so the two never collide in one row.
+   -------------------------------------------------------------------------- */
+
+.od-up        { color: var(--od-up); }
+.od-down      { color: var(--od-down); }
+.od-vol-long  { color: var(--od-vol-long); }
+.od-vol-short { color: var(--od-vol-short); }
+.od-flat      { color: var(--od-flat); }
+.od-live      { color: var(--od-accent); }
+
+/* Signed deltas. The sign comes from data-sign, never from the colour class —
+   a value can be negative and long-vol at the same time, and the two must not
+   fight over one selector. */
+.od-delta::before { content: "+"; }
+.od-delta[data-sign="-"]::before { content: "\2212"; } /* true minus, aligns in mono */
+.od-delta[data-sign="0"]::before { content: "\00B7"; }
+
+/* --------------------------------------------------------------------------
+   6. Epistemic status
+
+   The system's core idea: how a number is known is as visible as the number.
+     measured  — observed and stored (default, no treatment)
+     derived   — computed on read from stored observations
+     proxy     — a stand-in for data we do not license
+     stale     — real, but older than its expected refresh
+     null      — insufficient history; shown as an em dash, never a zero
+   -------------------------------------------------------------------------- */
+
+.od-derived {
+  text-decoration: underline dotted;
+  text-decoration-color: var(--od-derived);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  cursor: help;
+}
+
+.od-proxy {
+  color: var(--od-proxy);
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 3px,
+    var(--od-hatch) 3px 4px
+  );
+  padding-inline: 0.2em;
+  border-radius: var(--od-radius);
+}
+
+.od-stale {
+  color: var(--od-stale);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--od-stale) 55%, transparent);
+  text-decoration-thickness: 1px;
+}
+
+.od-null {
+  color: var(--od-null);
+  font-family: var(--od-font-data);
+}
+.od-null::after { content: "\2014"; } /* em dash — the only empty value */
+
+/* Whole panels can carry a status. Keeps the hatch off every cell. */
+.od-panel[data-status="proxy"]  { border-color: color-mix(in srgb, var(--od-proxy) 45%, var(--od-line)); }
+.od-panel[data-status="stale"]  { opacity: 0.72; }
+
+/* --------------------------------------------------------------------------
+   7. Panels
+   -------------------------------------------------------------------------- */
+
+.od-panel {
+  background: var(--od-panel);
+  border: var(--od-border) solid var(--od-line);
+  border-radius: var(--od-radius);
+  box-shadow: var(--od-shadow);
+  overflow: clip;
+}
+
+.od-panel-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--od-s2);
+  padding: var(--od-s2) var(--od-s3);
+  border-bottom: var(--od-border) solid var(--od-line);
+  background: var(--od-panel-raised);
+}
+
+.od-panel-title {
+  font-size: var(--od-size-small);
+  font-weight: 600;
+  letter-spacing: var(--od-tracking-wide);
+  margin: 0;
+}
+
+/* Timestamp / source, pushed right. Every panel should carry one. */
+.od-panel-meta {
+  margin-left: auto;
+  font-family: var(--od-font-data);
+  font-size: var(--od-size-micro);
+  color: var(--od-text-faint);
+}
+
+.od-panel-body { padding: var(--od-s3); }
+.od-panel-body--flush { padding: 0; }
+
+/* Dashboard grid. Panels declare their own span. */
+.od-grid {
+  display: grid;
+  gap: var(--od-s3);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.od-span-3  { grid-column: span 3; }
+.od-span-4  { grid-column: span 4; }
+.od-span-6  { grid-column: span 6; }
+.od-span-8  { grid-column: span 8; }
+.od-span-12 { grid-column: span 12; }
+
+@media (max-width: 900px) {
+  .od-grid > [class*="od-span-"] { grid-column: span 12; }
+}
+
+/* --------------------------------------------------------------------------
+   8. Readouts — one headline number with its context
+   -------------------------------------------------------------------------- */
+
+.od-readout { display: flex; flex-direction: column; gap: var(--od-s1); }
+.od-readout-label { font-size: var(--od-size-micro); color: var(--od-text-dim); letter-spacing: var(--od-tracking-wide); }
+.od-readout-value { font-family: var(--od-font-data); font-variant-numeric: tabular-nums; font-size: var(--od-size-num); line-height: 1.1; font-weight: 500; }
+.od-readout-note  { font-size: var(--od-size-micro); color: var(--od-text-faint); font-family: var(--od-font-data); }
+
+/* --------------------------------------------------------------------------
+   9. Tables
+   -------------------------------------------------------------------------- */
+
+.od-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--od-size-small);
+  line-height: var(--od-leading-data);
+}
+
+.od-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--od-panel-raised);
+  text-align: left;
+  font-weight: 600;
+  font-size: var(--od-size-micro);
+  color: var(--od-text-dim);
+  letter-spacing: var(--od-tracking-wide);
+  padding: var(--od-cell-y) var(--od-cell-x);
+  border-bottom: var(--od-border) solid var(--od-line-strong);
+  white-space: nowrap;
+}
+
+.od-table td {
+  height: var(--od-row-h);
+  padding: var(--od-cell-y) var(--od-cell-x);
+  border-bottom: var(--od-border) solid var(--od-line);
+  white-space: nowrap;
+}
+
+/* Numeric columns right-align and go mono. Mark the cell, not the column,
+   so a null or a proxy still lands in the right place. */
+.od-table td.od-num,
+.od-table th.od-num {
+  text-align: right;
+  font-family: var(--od-font-data);
+  font-variant-numeric: tabular-nums;
+}
+
+.od-table tbody tr:hover td { background: var(--od-panel-inset); }
+.od-table tbody tr[aria-selected="true"] td { background: var(--od-accent-soft); }
+
+/* Group boundary: a heavier rule where an independent source begins. */
+.od-table tr.od-group td { border-top: var(--od-border) solid var(--od-line-strong); }
+
+/* Wide tables scroll inside their panel, never the page. */
+.od-scroll-x { overflow-x: auto; }
+
+/* --------------------------------------------------------------------------
+   10. Badges
+   -------------------------------------------------------------------------- */
+
+.od-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.1em 0.45em;
+  border: var(--od-border) solid currentColor;
+  border-radius: var(--od-radius);
+  font-size: var(--od-size-micro);
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: var(--od-tracking-wide);
+  white-space: nowrap;
+}
+
+.od-badge--up        { color: var(--od-up);        background: var(--od-up-soft); }
+.od-badge--down      { color: var(--od-down);      background: var(--od-down-soft); }
+.od-badge--vol-long  { color: var(--od-vol-long);  background: var(--od-vol-long-soft); }
+.od-badge--vol-short { color: var(--od-vol-short); background: var(--od-vol-short-soft); }
+.od-badge--flat      { color: var(--od-flat);      background: var(--od-flat-soft); }
+.od-badge--live      { color: var(--od-accent);    background: var(--od-accent-soft); }
+
+.od-badge--proxy {
+  color: var(--od-proxy);
+  background-image: repeating-linear-gradient(135deg, transparent 0 3px, var(--od-hatch) 3px 4px);
+}
+
+.od-badge--derived {
+  color: var(--od-derived);
+  border-style: dashed;
+  background: transparent;
+}
+
+/* Live dot for the collector heartbeat. Respects reduced motion below. */
+.od-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--od-radius-pill);
+  background: currentColor;
+  flex: none;
+}
+.od-dot--pulse { animation: od-pulse 2.4s var(--od-ease) infinite; }
+
+@keyframes od-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+/* --------------------------------------------------------------------------
+   11. Regime card — the call, plus the per-dimension scoring behind it
+   -------------------------------------------------------------------------- */
+
+.od-regime { display: flex; flex-direction: column; gap: var(--od-s3); }
+
+.od-regime-call {
+  display: flex;
+  align-items: baseline;
+  gap: var(--od-s2);
+  font-size: var(--od-size-h3);
+  font-weight: 600;
+}
+
+.od-dims { display: grid; gap: var(--od-s2); }
+
+.od-dim {
+  display: grid;
+  grid-template-columns: 9rem 1fr 3.5rem;
+  align-items: center;
+  gap: var(--od-s2);
+  font-size: var(--od-size-micro);
+}
+
+.od-dim-label { color: var(--od-text-dim); }
+
+/* Signed bar: centred at zero, fills left or right. */
+.od-dim-bar {
+  position: relative;
+  height: 4px;
+  background: var(--od-panel-inset);
+  border-radius: var(--od-radius);
+}
+.od-dim-bar::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 50%;
+  width: 1px;
+  background: var(--od-line-strong);
+}
+.od-dim-fill {
+  position: absolute;
+  inset-block: 0;
+  background: currentColor;
+  border-radius: var(--od-radius);
+}
+
+.od-dim-score { text-align: right; font-family: var(--od-font-data); font-variant-numeric: tabular-nums; }
+
+/* --------------------------------------------------------------------------
+   12. Contradicting evidence
+
+   Never an answer with the doubt stripped off. Deliberately not styled as a
+   warning — it is part of the reading, not an error.
+   -------------------------------------------------------------------------- */
+
+.od-contra {
+  border-left: 2px solid var(--od-line-strong);
+  padding: var(--od-s2) var(--od-s3);
+  background: var(--od-panel-inset);
+  font-size: var(--od-size-small);
+  color: var(--od-text-dim);
+  border-radius: 0 var(--od-radius) var(--od-radius) 0;
+}
+.od-contra-label {
+  display: block;
+  font-size: var(--od-size-micro);
+  font-weight: 600;
+  color: var(--od-text);
+  margin-bottom: 0.2em;
+}
+
+/* Empty state: an invitation, not an apology. */
+.od-empty {
+  padding: var(--od-s5) var(--od-s3);
+  text-align: center;
+  color: var(--od-text-faint);
+  font-size: var(--od-size-small);
+}
+
+/* --------------------------------------------------------------------------
+   13. Controls
+   -------------------------------------------------------------------------- */
+
+.od-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--od-s2);
+  height: 1.75rem;
+  padding: 0 var(--od-s3);
+  font: inherit;
+  font-size: var(--od-size-small);
+  color: var(--od-text);
+  background: var(--od-panel-raised);
+  border: var(--od-border) solid var(--od-line-strong);
+  border-radius: var(--od-radius);
+  cursor: pointer;
+  transition: background var(--od-dur) var(--od-ease), border-color var(--od-dur) var(--od-ease);
+}
+.od-btn:hover { background: var(--od-panel-inset); border-color: var(--od-text-faint); }
+.od-btn[aria-pressed="true"] { color: var(--od-accent); border-color: currentColor; background: var(--od-accent-soft); }
+.od-btn:disabled { color: var(--od-text-faint); cursor: not-allowed; opacity: 0.6; }
+
+.od-input,
+.od-select {
+  height: 1.75rem;
+  padding: 0 var(--od-s2);
+  font: inherit;
+  font-size: var(--od-size-small);
+  font-family: var(--od-font-data);
+  color: var(--od-text);
+  background: var(--od-panel-inset);
+  border: var(--od-border) solid var(--od-line-strong);
+  border-radius: var(--od-radius);
+}
+
+/* Segmented control — tiers, horizons, theme. */
+.od-seg { display: inline-flex; border: var(--od-border) solid var(--od-line-strong); border-radius: var(--od-radius); overflow: clip; }
+.od-seg .od-btn { border: 0; border-radius: 0; background: transparent; }
+.od-seg .od-btn + .od-btn { border-left: var(--od-border) solid var(--od-line-strong); }
+
+/* Toolbar sits above a panel body, never inside the head. */
+.od-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--od-s2);
+  padding: var(--od-s2) var(--od-s3);
+  border-bottom: var(--od-border) solid var(--od-line);
+}
+
+/* --------------------------------------------------------------------------
+   14. Sparklines
+
+   One implementation, shared by home.html and the macro panels. Colour comes
+   from the axis class on the wrapper; the SVG itself stays neutral.
+   Markup: <span class="od-spark od-up"><svg viewBox="0 0 100 24" …>
+             <polyline class="od-spark-line" points="…"/>
+             <circle class="od-spark-tip" cx cy r="1.6"/>
+           </svg></span>
+   -------------------------------------------------------------------------- */
+
+.od-spark { display: inline-block; width: 6.25rem; height: 1.5rem; vertical-align: middle; color: var(--od-flat); }
+.od-spark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.od-spark-line { fill: none; stroke: currentColor; stroke-width: 1.25; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.od-spark-band { fill: currentColor; opacity: 0.12; stroke: none; }
+.od-spark-tip  { fill: currentColor; }
+.od-spark-zero { stroke: var(--od-line-strong); stroke-width: 1; stroke-dasharray: 2 2; vector-effect: non-scaling-stroke; }
+
+/* Missing history renders as a flat dashed rule, not an invented line. */
+.od-spark--null .od-spark-line { stroke: var(--od-null); stroke-dasharray: 3 3; }
+
+/* --------------------------------------------------------------------------
+   15. 3D viewer overlay — floats over the canvas, must stay legible on any
+   surface colour the shader produces.
+   -------------------------------------------------------------------------- */
+
+.od-overlay {
+  background: var(--od-panel);
+  background: color-mix(in srgb, var(--od-panel) 82%, transparent);
+  backdrop-filter: blur(8px);
+  border: var(--od-border) solid var(--od-line-strong);
+  border-radius: var(--od-radius);
+  padding: var(--od-s2) var(--od-s3);
+  font-size: var(--od-size-micro);
+  font-family: var(--od-font-data);
+  color: var(--od-text);
+}
+
+/* --------------------------------------------------------------------------
+   16. Utilities
+   -------------------------------------------------------------------------- */
+
+.od-stack   { display: flex; flex-direction: column; gap: var(--od-s3); }
+.od-row     { display: flex; align-items: center; gap: var(--od-s2); }
+.od-row--wrap { flex-wrap: wrap; }
+.od-push    { margin-left: auto; }
+.od-rule    { height: 1px; background: var(--od-line); border: 0; margin: var(--od-s3) 0; }
+.od-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  .od-root *,
+  .od-root *::before,
+  .od-root *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  .od-root { background: #fff; color: #000; }
+  .od-panel { break-inside: avoid; box-shadow: none; }
+  .od-btn, .od-toolbar { display: none; }
+}
+
+
+</style>
+<style>
+  /* Home page only: layout, and the few parts the design system does not cover
+     (a modal dialog, the tall hoverable sparkline, the whole-card link). */
+  [hidden] { display: none !important; }
+  html, body { margin: 0; }
+  body { background: var(--od-bg); }
+  a { color: inherit; }
+
+  .page { max-width: 1480px; margin: 0 auto; padding: var(--od-s5) var(--od-s4) var(--od-s7); }
+  .head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--od-s3); }
+  .head h1 { font-size: var(--od-size-h2); line-height: var(--od-leading-tight);
+    letter-spacing: var(--od-tracking-tight); font-weight: 600; margin: 0; }
+  #subtitle { margin-top: var(--od-s1); }
+  #note { margin: var(--od-s4) 0 var(--od-s4); }
+  main { transition: opacity var(--od-dur) var(--od-ease); }
+  body.refreshing.loaded main { opacity: 0.7; }
+
+  /* Health of the collector: a third axis, neither direction nor volatility.
+     It borrows the down colour but never sits next to a market value. */
+  .od-badge--alert { color: var(--od-down); background: var(--od-down-soft); }
+
+  /* Flash and setup messages. The system styles contradicting evidence, not
+     errors, so these reuse .od-contra's rule-on-the-left form. */
+  .message { margin-bottom: var(--od-s4); }
+  .message.bad  { border-left-color: var(--od-down); }
+  .message.good { border-left-color: var(--od-up); }
+  .message code { font-family: var(--od-font-data); color: var(--od-text); }
+
+  .od-btn.danger:hover { color: var(--od-down); border-color: currentColor; }
+
+  /* The card title's ::after covers the whole panel, so anything clickable
+     inside has to sit above it. */
+  .actions { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: var(--od-s2); margin-left: auto; }
+  .foot .actions { margin: var(--od-s1) 0 0; }
+  td .actions { margin: 0; }
+
+  dialog { width: min(420px, calc(100vw - 32px)); padding: var(--od-s4) var(--od-s5) var(--od-s3);
+    border: var(--od-border) solid var(--od-line-strong); border-radius: var(--od-radius);
+    background: var(--od-panel); color: var(--od-text); font-family: var(--od-font-ui); font-size: var(--od-size-base); }
+  dialog::backdrop { background: rgba(0, 0, 0, 0.6); }
+  dialog h2 { margin: 0 0 var(--od-s1); }
+  .dialog-note { margin: 0 0 var(--od-s4); }
+  .dialog-note code, .dialog-status code { font-family: var(--od-font-data); }
+  .field { display: block; margin-bottom: var(--od-s3); color: var(--od-text-dim); font-size: var(--od-size-micro);
+    letter-spacing: var(--od-tracking-wide); }
+  .field .od-input, .field .od-select { display: block; width: 100%; margin-top: var(--od-s1); height: 1.875rem; }
+  #add-symbol { text-transform: uppercase; letter-spacing: var(--od-tracking-wide); }
+  .check { display: flex; align-items: center; gap: var(--od-s2); margin: var(--od-s3) 0;
+    color: var(--od-text-dim); font-size: var(--od-size-small); }
+  .check input { accent-color: var(--od-focus); }
+  .dialog-status { margin: 0 0 var(--od-s3); padding: var(--od-s2) var(--od-s3); background: var(--od-panel-inset);
+    border-left: 2px solid var(--od-line-strong); color: var(--od-text-dim); font-size: var(--od-size-small); }
+  .dialog-status.bad { border-left-color: var(--od-down); color: var(--od-text); }
+  .dialog-buttons { display: flex; justify-content: flex-end; gap: var(--od-s2); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(390px, 100%), 1fr)); gap: var(--od-s3); }
+  .ticker { position: relative; }
+  .ticker .od-panel-body { display: flex; flex-direction: column; gap: var(--od-s3); }
+  .ticker.linked:hover { border-color: var(--od-line-strong); }
+  .ticker.linked:hover .od-panel-body { background: var(--od-panel-inset); }
+  /* Inactive: no raised panel, values in dimmed ink. (Opacity would take the
+     faint text below 4.5:1.) */
+  .ticker.inactive { background: transparent; }
+  .ticker.inactive .od-panel-head { background: transparent; }
+  .ticker.inactive .card-head h2, .ticker.inactive .od-readout-value, .ticker.inactive .facts b { color: var(--od-text-dim); }
+  .card-head { display: flex; align-items: center; gap: var(--od-s2); min-width: 0; }
+  .card-head h2 { margin: 0; }
+  .card-head h2 a { text-decoration: none; }
+  .card-head h2 a::after { content: ""; position: absolute; inset: 0; }  /* the whole card opens the viewer */
+  .card-head .status { margin-left: auto; display: inline-flex; align-items: center; gap: var(--od-s2); }
+  .notes { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--od-s3); }
+  .od-readout-value { white-space: nowrap; }
+  .od-unit.word { margin-left: 0.3em; }
+
+  /* The system's sparkline, tall enough to hover a whole session in. */
+  .spark { position: relative; z-index: 1; display: block; width: auto; height: 2.5rem;
+    margin-top: var(--od-s1); cursor: pointer; }
+  /* .od-spark sets its own colour after the axis classes in the sheet, so the
+     axis class on the wrapper never wins on its own (see TODO.md). */
+  .od-spark.od-up { color: var(--od-up); }
+  .od-spark.od-down { color: var(--od-down); }
+  .od-spark.od-vol-long { color: var(--od-vol-long); }
+  .od-spark.od-vol-short { color: var(--od-vol-short); }
+  .spark svg { position: absolute; inset: 0; }
+  .spark-dot, .spark-hover { position: absolute; width: 8px; height: 8px; margin: -4px 0 0 -4px;
+    border-radius: var(--od-radius-pill); background: currentColor;
+    box-shadow: 0 0 0 2px var(--od-panel); pointer-events: none; }
+  .spark-hover { background: var(--od-text); }
+  .spark-cross { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--od-line-strong); pointer-events: none; }
+
+  .facts { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--od-s1) var(--od-s4);
+    color: var(--od-text-dim); font-size: var(--od-size-small); }
+  .facts b { font-family: var(--od-font-data); font-variant-numeric: tabular-nums; font-weight: 500; color: var(--od-text); }
+  .facts abbr { text-decoration: none; }
+  .foot { display: flex; flex-direction: column; gap: var(--od-s1); padding-top: var(--od-s2);
+    border-top: var(--od-border) solid var(--od-line); color: var(--od-text-faint); font-size: var(--od-size-micro); }
+  .tiers { display: flex; flex-wrap: wrap; gap: var(--od-s1) var(--od-s3); margin: 0; padding: 0; list-style: none; }
+  .tiers li { display: inline-flex; align-items: center; gap: var(--od-s1); }
+  .tiers .name { color: var(--od-text-dim); letter-spacing: var(--od-tracking-wide); }
+  .tiers time { font-family: var(--od-font-data); }
+
+  #table-view table { min-width: 100%; }
+  #table-view caption { caption-side: bottom; padding: var(--od-s2) var(--od-cell-x); text-align: left;
+    color: var(--od-text-faint); font-size: var(--od-size-micro); }
+
+  .tooltip { position: fixed; z-index: 10; pointer-events: none; white-space: nowrap; }
+  .tooltip .value { font-size: var(--od-size-lede); font-weight: 600; }
+  .tooltip .when { color: var(--od-text-dim); }
+
+  @media (max-width: 460px) {
+    .od-readout-value { font-size: var(--od-size-h3); }
+    .tiles { gap: var(--od-s2); }
+  }
+</style>
+</head>
+<body class="od-root">
+<div class="page">
+  <header class="head">
+    <div>
+      <h1>Options DB</h1>
+      <p class="od-small" id="subtitle">Loading tickers...</p>
+    </div>
+    <div class="actions">
+      <nav class="actions" id="dashboards" aria-label="Dashboards">
+        <a class="od-btn" href="/">&larr; Dashboards</a>
+        <a class="od-btn" href="/eurodollar">Eurodollar</a>
+        <a class="od-btn" href="/rates">Rates &amp; credit</a>
+      </nav>
+      <div class="od-seg" role="group" aria-label="Show tickers as">
+        <button type="button" class="od-btn" data-view="cards" aria-pressed="true">Cards</button>
+        <button type="button" class="od-btn" data-view="table" aria-pressed="false">Table</button>
+      </div>
+      <button type="button" class="od-btn" id="add-open">+ Add ticker</button>
+    </div>
+  </header>
+  <p class="od-lede" id="note"></p>
+  <main>
+    <div class="od-contra message" id="flash" role="status" hidden></div>
+    <div class="od-contra message" id="message" role="status" hidden></div>
+    <section class="cards" id="cards" aria-label="Tickers"></section>
+    <section class="od-panel od-scroll-x" id="table-view" aria-label="Tickers table" hidden><table class="od-table" id="table"></table></section>
+  </main>
+</div>
+<div class="od-overlay tooltip" id="tooltip" hidden></div>
+
+<dialog id="add-dialog" aria-labelledby="add-title">
+  <form id="add-form" autocomplete="off">
+    <h2 class="od-h3" id="add-title">Add a ticker</h2>
+    <p class="dialog-note od-small">Saved to <code id="add-path">config/tickers.yaml</code>, the same file
+      <code>options-db tickers add</code> edits. A running collector picks it up at its next wake-up.</p>
+    <label class="field">Symbol
+      <input type="text" class="od-input" id="add-symbol" required maxlength="20" spellcheck="false" placeholder="AAPL">
+    </label>
+    <label class="field">Type
+      <select class="od-select" id="add-type"></select>
+    </label>
+    <label class="field">yfinance symbol
+      <input type="text" class="od-input" id="add-yf" maxlength="20" spellcheck="false" placeholder="only if different, e.g. ^VIX">
+    </label>
+    <label class="field">Notes
+      <input type="text" class="od-input" id="add-notes" maxlength="200" placeholder="optional">
+    </label>
+    <label class="check"><input type="checkbox" id="add-active" checked> Collect it from the next wake-up</label>
+    <p class="dialog-status" id="add-status" hidden></p>
+    <div class="dialog-buttons">
+      <button type="button" class="od-btn" id="add-cancel">Cancel</button>
+      <button type="submit" class="od-btn" id="add-submit">Check and add</button>
+    </div>
+  </form>
+</dialog>
+
+<script id="home-data" type="application/json">{"generated_at":"2026-10-02T03:42:38Z","timezone":"America/New_York","market_open":false,"target_days":30,"sources":["yfinance"],"tickers":[{"symbol":"GLD","type":"etf","active":true,"notes":"SPDR Gold Shares","last_snapshot":{"captured_at_utc":"2026-10-01T19:45:00Z","status":"ok","error":null},"tiers":[{"name":"short","interval_minutes":15,"last_poll":"2026-10-01T19:45:00Z"},{"name":"near","interval_minutes":30,"last_poll":"2026-10-01T19:30:00Z"},{"name":"mid","interval_minutes":60,"last_poll":"2026-10-01T19:00:00Z"},{"name":"long","interval_minutes":120,"last_poll":"2026-10-01T18:00:00Z"}],"day":"2026-10-01","session":{"open":"2026-10-01T13:30:00Z","close":"2026-10-01T20:00:00Z"},"stored":{"snapshots":24,"problems":0,"expirations":25,"quotes":46374},"spot":{"open":381.4693,"now":382.75,"low":380.735,"high":383.11,"points":[["2026-10-01T14:00:00Z",381.4693],["2026-10-01T14:15:00Z",380.735],["2026-10-01T14:30:00Z",381.53],["2026-10-01T14:45:00Z",381.85],["2026-10-01T15:00:00Z",381.46],["2026-10-01T15:15:00Z",380.9],["2026-10-01T15:30:00Z",381.84],["2026-10-01T15:45:00Z",382.15],["2026-10-01T16:00:00Z",382.17],["2026-10-01T16:15:00Z",382.23],["2026-10-01T16:30:00Z",381.95],["2026-10-01T16:45:00Z",381.7643],["2026-10-01T17:00:00Z",381.49],["2026-10-01T17:15:00Z",382.29],["2026-10-01T17:30:00Z",383.11],["2026-10-01T17:45:00Z",382.81],["2026-10-01T18:00:00Z",382.19],["2026-10-01T18:15:00Z",382.25],["2026-10-01T18:30:00Z",382.53],["2026-10-01T18:45:00Z",382.955],["2026-10-01T19:00:00Z",382.7751],["2026-10-01T19:15:00Z",382.8],["2026-10-01T19:30:00Z",382.755],["2026-10-01T19:45:00Z",382.75]]},"atm":{"open":0.21160018531887673,"now":0.21004568269326654,"low":0.21003582154827455,"high":0.2116092825147849,"points":[["2026-10-01T14:00:00Z",0.2116],["2026-10-01T14:15:00Z",0.211609],["2026-10-01T14:30:00Z",0.210873],["2026-10-01T14:45:00Z",0.210884],["2026-10-01T15:00:00Z",0.210156],["2026-10-01T15:15:00Z",0.210166],["2026-10-01T15:30:00Z",0.210736],["2026-10-01T15:45:00Z",0.210746],["2026-10-01T16:00:00Z",0.210495],["2026-10-01T16:15:00Z",0.210505],["2026-10-01T16:30:00Z",0.210442],["2026-10-01T16:45:00Z",0.210452],["2026-10-01T17:00:00Z",0.211235],["2026-10-01T17:15:00Z",0.211245],["2026-10-01T17:30:00Z",0.210943],["2026-10-01T17:45:00Z",0.210952],["2026-10-01T18:00:00Z",0.210439],["2026-10-01T18:15:00Z",0.210448],["2026-10-01T18:30:00Z",0.210509],["2026-10-01T18:45:00Z",0.210518],["2026-10-01T19:00:00Z",0.210603],["2026-10-01T19:15:00Z",0.210612],["2026-10-01T19:30:00Z",0.210036],["2026-10-01T19:45:00Z",0.210046]]},"rr25":{"open":-0.006627048703644195,"now":-0.007182233171044106,"low":-0.009230468569841888,"high":-0.004614619734526537,"points":[["2026-10-01T14:00:00Z",-0.006627],["2026-10-01T14:15:00Z",-0.006618],["2026-10-01T14:30:00Z",-0.004645],["2026-10-01T14:45:00Z",-0.004615],["2026-10-01T15:00:00Z",-0.005484],["2026-10-01T15:15:00Z",-0.005473],["2026-10-01T15:30:00Z",-0.005787],["2026-10-01T15:45:00Z",-0.005772],["2026-10-01T16:00:00Z",-0.005674],["2026-10-01T16:15:00Z",-0.005673],["2026-10-01T16:30:00Z",-0.00615],["2026-10-01T16:45:00Z",-0.006137],["2026-10-01T17:00:00Z",-0.006939],["2026-10-01T17:15:00Z",-0.006913],["2026-10-01T17:30:00Z",-0.00923],["2026-10-01T17:45:00Z",-0.009051],["2026-10-01T18:00:00Z",-0.007235],["2026-10-01T18:15:00Z",-0.007195],["2026-10-01T18:30:00Z",-0.008323],["2026-10-01T18:45:00Z",-0.008323],["2026-10-01T19:00:00Z",-0.007391],["2026-10-01T19:15:00Z",-0.007339],["2026-10-01T19:30:00Z",-0.007194],["2026-10-01T19:45:00Z",-0.007182]]},"rr25_atm":{"open":-0.031318728259417075,"now":-0.034193671961981954,"low":-0.04375816782347409,"high":-0.02188228194648264,"points":[["2026-10-01T14:00:00Z",-0.031319],["2026-10-01T14:15:00Z",-0.031275],["2026-10-01T14:30:00Z",-0.022026],["2026-10-01T14:45:00Z",-0.021882],["2026-10-01T15:00:00Z",-0.026096],["2026-10-01T15:15:00Z",-0.02604],["2026-10-01T15:30:00Z",-0.027461],["2026-10-01T15:45:00Z",-0.027388],["2026-10-01T16:00:00Z",-0.026954],["2026-10-01T16:15:00Z",-0.02695],["2026-10-01T16:30:00Z",-0.029223],["2026-10-01T16:45:00Z",-0.02916],["2026-10-01T17:00:00Z",-0.032848],["2026-10-01T17:15:00Z",-0.032726],["2026-10-01T17:30:00Z",-0.043758],["2026-10-01T17:45:00Z",-0.042905],["2026-10-01T18:00:00Z",-0.03438],["2026-10-01T18:15:00Z",-0.034191],["2026-10-01T18:30:00Z",-0.03954],["2026-10-01T18:45:00Z",-0.039538],["2026-10-01T19:00:00Z",-0.035096],["2026-10-01T19:15:00Z",-0.034847],["2026-10-01T19:30:00Z",-0.034251],["2026-10-01T19:45:00Z",-0.034194]]},"bf25":{"open":0.0066878788976794945,"now":0.006807098616973151,"low":0.006106910693676332,"high":0.0070189805074965805,"points":[["2026-10-01T14:00:00Z",0.006688],["2026-10-01T14:15:00Z",0.006688],["2026-10-01T14:30:00Z",0.006771],["2026-10-01T14:45:00Z",0.006759],["2026-10-01T15:00:00Z",0.006112],["2026-10-01T15:15:00Z",0.006107],["2026-10-01T15:30:00Z",0.006272],["2026-10-01T15:45:00Z",0.006265],["2026-10-01T16:00:00Z",0.006229],["2026-10-01T16:15:00Z",0.006228],["2026-10-01T16:30:00Z",0.006203],["2026-10-01T16:45:00Z",0.006197],["2026-10-01T17:00:00Z",0.00682],["2026-10-01T17:15:00Z",0.006816],["2026-10-01T17:30:00Z",0.006811],["2026-10-01T17:45:00Z",0.006817],["2026-10-01T18:00:00Z",0.007019],["2026-10-01T18:15:00Z",0.007014],["2026-10-01T18:30:00Z",0.006916],["2026-10-01T18:45:00Z",0.006911],["2026-10-01T19:00:00Z",0.006802],["2026-10-01T19:15:00Z",0.006803],["2026-10-01T19:30:00Z",0.006811],["2026-10-01T19:45:00Z",0.006807]]},"rr10":{"open":-0.015024663202587135,"now":-0.01599483785090383,"low":-0.021141365050222266,"high":-0.012765929280583593,"points":[["2026-10-01T14:00:00Z",-0.015025],["2026-10-01T14:15:00Z",-0.015006],["2026-10-01T14:30:00Z",-0.012818],["2026-10-01T14:45:00Z",-0.012766],["2026-10-01T15:00:00Z",-0.014701],["2026-10-01T15:15:00Z",-0.01468],["2026-10-01T15:30:00Z",-0.014802],["2026-10-01T15:45:00Z",-0.014774],["2026-10-01T16:00:00Z",-0.015146],["2026-10-01T16:15:00Z",-0.015144],["2026-10-01T16:30:00Z",-0.01613],["2026-10-01T16:45:00Z",-0.016106],["2026-10-01T17:00:00Z",-0.01661],["2026-10-01T17:15:00Z",-0.016559],["2026-10-01T17:30:00Z",-0.021141],["2026-10-01T17:45:00Z",-0.0208],["2026-10-01T18:00:00Z",-0.01727],["2026-10-01T18:15:00Z",-0.017192],["2026-10-01T18:30:00Z",-0.019033],["2026-10-01T18:45:00Z",-0.019031],["2026-10-01T19:00:00Z",-0.017044],["2026-10-01T19:15:00Z",-0.016945],["2026-10-01T19:30:00Z",-0.016019],["2026-10-01T19:45:00Z",-0.015995]]},"href":"GLD_2026-10-01.html"},{"symbol":"TLT","type":"etf","active":true,"notes":"iShares 20+ Year Treasury Bond ETF","last_snapshot":{"captured_at_utc":"2026-10-01T19:45:00Z","status":"ok","error":null},"tiers":[{"name":"short","interval_minutes":15,"last_poll":"2026-10-01T19:45:00Z"},{"name":"near","interval_minutes":30,"last_poll":"2026-10-01T19:30:00Z"},{"name":"mid","interval_minutes":60,"last_poll":"2026-10-01T19:00:00Z"},{"name":"long","interval_minutes":120,"last_poll":"2026-10-01T18:00:00Z"}],"day":"2026-10-01","session":{"open":"2026-10-01T13:30:00Z","close":"2026-10-01T20:00:00Z"},"stored":{"snapshots":24,"problems":0,"expirations":27,"quotes":14364},"spot":{"open":76.895,"now":77.62,"low":76.895,"high":77.99,"points":[["2026-10-01T14:00:00Z",76.895],["2026-10-01T14:15:00Z",76.9899],["2026-10-01T14:30:00Z",77.025],["2026-10-01T14:45:00Z",77.29],["2026-10-01T15:00:00Z",77.1748],["2026-10-01T15:15:00Z",77.285],["2026-10-01T15:30:00Z",77.4488],["2026-10-01T15:45:00Z",77.57],["2026-10-01T16:00:00Z",77.675],["2026-10-01T16:15:00Z",77.7387],["2026-10-01T16:30:00Z",77.785],["2026-10-01T16:45:00Z",77.8],["2026-10-01T17:00:00Z",77.82],["2026-10-01T17:15:00Z",77.97],["2026-10-01T17:30:00Z",77.99],["2026-10-01T17:45:00Z",77.965],["2026-10-01T18:00:00Z",77.7038],["2026-10-01T18:15:00Z",77.735],["2026-10-01T18:30:00Z",77.745],["2026-10-01T18:45:00Z",77.725],["2026-10-01T19:00:00Z",77.7551],["2026-10-01T19:15:00Z",77.685],["2026-10-01T19:30:00Z",77.715],["2026-10-01T19:45:00Z",77.62]]},"atm":{"open":0.173929259631433,"now":0.163760365568483,"low":0.16204845465560902,"high":0.17393735205669206,"points":[["2026-10-01T14:00:00Z",0.173929],["2026-10-01T14:15:00Z",0.173937],["2026-10-01T14:30:00Z",0.171005],["2026-10-01T14:45:00Z",0.171017],["2026-10-01T15:00:00Z",0.170413],["2026-10-01T15:15:00Z",0.17042],["2026-10-01T15:30:00Z",0.17203],["2026-10-01T15:45:00Z",0.172039],["2026-10-01T16:00:00Z",0.168752],["2026-10-01T16:15:00Z",0.168762],["2026-10-01T16:30:00Z",0.16624],["2026-10-01T16:45:00Z",0.16625],["2026-10-01T17:00:00Z",0.16588],["2026-10-01T17:15:00Z",0.165889],["2026-10-01T17:30:00Z",0.16354],["2026-10-01T17:45:00Z",0.16355],["2026-10-01T18:00:00Z",0.162341],["2026-10-01T18:15:00Z",0.162351],["2026-10-01T18:30:00Z",0.164736],["2026-10-01T18:45:00Z",0.164745],["2026-10-01T19:00:00Z",0.162048],["2026-10-01T19:15:00Z",0.162061],["2026-10-01T19:30:00Z",0.16375],["2026-10-01T19:45:00Z",0.16376]]},"rr25":{"open":-0.021758252465025302,"now":-0.018308704540348997,"low":-0.02452185950394134,"high":-0.01603667632683564,"points":[["2026-10-01T14:00:00Z",-0.021758],["2026-10-01T14:15:00Z",-0.021762],["2026-10-01T14:30:00Z",-0.02452],["2026-10-01T14:45:00Z",-0.02452],["2026-10-01T15:00:00Z",-0.024522],["2026-10-01T15:15:00Z",-0.024522],["2026-10-01T15:30:00Z",-0.023189],["2026-10-01T15:45:00Z",-0.023193],["2026-10-01T16:00:00Z",-0.019165],["2026-10-01T16:15:00Z",-0.019163],["2026-10-01T16:30:00Z",-0.019368],["2026-10-01T16:45:00Z",-0.019356],["2026-10-01T17:00:00Z",-0.019021],["2026-10-01T17:15:00Z",-0.019032],["2026-10-01T17:30:00Z",-0.018107],["2026-10-01T17:45:00Z",-0.018123],["2026-10-01T18:00:00Z",-0.018421],["2026-10-01T18:15:00Z",-0.018423],["2026-10-01T18:30:00Z",-0.01826],["2026-10-01T18:45:00Z",-0.018267],["2026-10-01T19:00:00Z",-0.016037],["2026-10-01T19:15:00Z",-0.016042],["2026-10-01T19:30:00Z",-0.018308],["2026-10-01T19:45:00Z",-0.018309]]},"rr25_atm":{"open":-0.12509828714922608,"now":-0.11180180550276357,"low":-0.14389681730574516,"high":-0.09896222929689358,"points":[["2026-10-01T14:00:00Z",-0.125098],["2026-10-01T14:15:00Z",-0.125114],["2026-10-01T14:30:00Z",-0.143389],["2026-10-01T14:45:00Z",-0.143379],["2026-10-01T15:00:00Z",-0.143897],["2026-10-01T15:15:00Z",-0.143889],["2026-10-01T15:30:00Z",-0.134794],["2026-10-01T15:45:00Z",-0.134813],["2026-10-01T16:00:00Z",-0.113567],["2026-10-01T16:15:00Z",-0.113548],["2026-10-01T16:30:00Z",-0.116504],["2026-10-01T16:45:00Z",-0.116426],["2026-10-01T17:00:00Z",-0.114669],["2026-10-01T17:15:00Z",-0.11473],["2026-10-01T17:30:00Z",-0.110722],["2026-10-01T17:45:00Z",-0.110809],["2026-10-01T18:00:00Z",-0.11347],["2026-10-01T18:15:00Z",-0.113479],["2026-10-01T18:30:00Z",-0.110845],["2026-10-01T18:45:00Z",-0.110878],["2026-10-01T19:00:00Z",-0.098962],["2026-10-01T19:15:00Z",-0.098986],["2026-10-01T19:30:00Z",-0.111802],["2026-10-01T19:45:00Z",-0.111802]]},"bf25":{"open":0.0029859821427774824,"now":0.0035402068056671065,"low":0.002928390189458896,"high":0.003589986714402249,"points":[["2026-10-01T14:00:00Z",0.002986],["2026-10-01T14:15:00Z",0.002985],["2026-10-01T14:30:00Z",0.003381],["2026-10-01T14:45:00Z",0.003379],["2026-10-01T15:00:00Z",0.003507],["2026-10-01T15:15:00Z",0.003505],["2026-10-01T15:30:00Z",0.00314],["2026-10-01T15:45:00Z",0.003138],["2026-10-01T16:00:00Z",0.003014],["2026-10-01T16:15:00Z",0.003013],["2026-10-01T16:30:00Z",0.003075],["2026-10-01T16:45:00Z",0.003074],["2026-10-01T17:00:00Z",0.003065],["2026-10-01T17:15:00Z",0.003062],["2026-10-01T17:30:00Z",0.003054],["2026-10-01T17:45:00Z",0.003051],["2026-10-01T18:00:00Z",0.003096],["2026-10-01T18:15:00Z",0.003094],["2026-10-01T18:30:00Z",0.002931],["2026-10-01T18:45:00Z",0.002928],["2026-10-01T19:00:00Z",0.00359],["2026-10-01T19:15:00Z",0.003587],["2026-10-01T19:30:00Z",0.003543],["2026-10-01T19:45:00Z",0.00354]]},"rr10":{"open":-0.03948497549346705,"now":-0.03478733022686181,"low":-0.04678399697751828,"high":-0.030292189919293888,"points":[["2026-10-01T14:00:00Z",-0.039485],["2026-10-01T14:15:00Z",-0.039493],["2026-10-01T14:30:00Z",-0.045272],["2026-10-01T14:45:00Z",-0.045266],["2026-10-01T15:00:00Z",-0.046784],["2026-10-01T15:15:00Z",-0.046781],["2026-10-01T15:30:00Z",-0.043666],["2026-10-01T15:45:00Z",-0.043671],["2026-10-01T16:00:00Z",-0.035834],["2026-10-01T16:15:00Z",-0.03583],["2026-10-01T16:30:00Z",-0.036368],["2026-10-01T16:45:00Z",-0.036348],["2026-10-01T17:00:00Z",-0.035684],["2026-10-01T17:15:00Z",-0.035702],["2026-10-01T17:30:00Z",-0.03382],["2026-10-01T17:45:00Z",-0.033846],["2026-10-01T18:00:00Z",-0.03447],["2026-10-01T18:15:00Z",-0.034475],["2026-10-01T18:30:00Z",-0.033837],["2026-10-01T18:45:00Z",-0.033847],["2026-10-01T19:00:00Z",-0.030292],["2026-10-01T19:15:00Z",-0.0303],["2026-10-01T19:30:00Z",-0.034789],["2026-10-01T19:45:00Z",-0.034787]]},"href":"TLT_2026-10-01.html"},{"symbol":"MSTR","type":"equity","active":true,"notes":"Strategy Inc (formerly MicroStrategy)","last_snapshot":{"captured_at_utc":"2026-10-01T19:45:00Z","status":"ok","error":null},"tiers":[{"name":"short","interval_minutes":15,"last_poll":"2026-10-01T19:45:00Z"},{"name":"near","interval_minutes":30,"last_poll":"2026-10-01T19:30:00Z"},{"name":"mid","interval_minutes":60,"last_poll":"2026-10-01T19:00:00Z"},{"name":"long","interval_minutes":120,"last_poll":"2026-10-01T18:00:00Z"}],"day":"2026-10-01","session":{"open":"2026-10-01T13:30:00Z","close":"2026-10-01T20:00:00Z"},"stored":{"snapshots":24,"problems":0,"expirations":18,"quotes":21657},"spot":{"open":156.97,"now":160.485,"low":156.005,"high":161.25,"points":[["2026-10-01T14:00:00Z",156.97],["2026-10-01T14:15:00Z",156.085],["2026-10-01T14:30:00Z",157.14],["2026-10-01T14:45:00Z",157.04],["2026-10-01T15:00:00Z",156.61],["2026-10-01T15:15:00Z",156.715],["2026-10-01T15:30:00Z",156.66],["2026-10-01T15:45:00Z",156.005],["2026-10-01T16:00:00Z",156.6544],["2026-10-01T16:15:00Z",156.86],["2026-10-01T16:30:00Z",156.45],["2026-10-01T16:45:00Z",157.3],["2026-10-01T17:00:00Z",157.14],["2026-10-01T17:15:00Z",158.61],["2026-10-01T17:30:00Z",160.92],["2026-10-01T17:45:00Z",159.3212],["2026-10-01T18:00:00Z",159.04],["2026-10-01T18:15:00Z",159.005],["2026-10-01T18:30:00Z",158.81],["2026-10-01T18:45:00Z",160.105],["2026-10-01T19:00:00Z",159.725],["2026-10-01T19:15:00Z",161.25],["2026-10-01T19:30:00Z",159.9385],["2026-10-01T19:45:00Z",160.485]]},"atm":{"open":0.6663809165177308,"now":0.6689379939033707,"low":0.6506375707488241,"high":0.6689379939033707,"points":[["2026-10-01T14:00:00Z",0.666381],["2026-10-01T14:15:00Z",0.666388],["2026-10-01T14:30:00Z",0.653938],["2026-10-01T14:45:00Z",0.653972],["2026-10-01T15:00:00Z",0.655758],["2026-10-01T15:15:00Z",0.655797],["2026-10-01T15:30:00Z",0.656056],["2026-10-01T15:45:00Z",0.656079],["2026-10-01T16:00:00Z",0.652584],["2026-10-01T16:15:00Z",0.652614],["2026-10-01T16:30:00Z",0.650638],["2026-10-01T16:45:00Z",0.650672],["2026-10-01T17:00:00Z",0.655725],["2026-10-01T17:15:00Z",0.655744],["2026-10-01T17:30:00Z",0.658734],["2026-10-01T17:45:00Z",0.658774],["2026-10-01T18:00:00Z",0.66488],["2026-10-01T18:15:00Z",0.664908],["2026-10-01T18:30:00Z",0.664673],["2026-10-01T18:45:00Z",0.664733],["2026-10-01T19:00:00Z",0.663328],["2026-10-01T19:15:00Z",0.663361],["2026-10-01T19:30:00Z",0.668913],["2026-10-01T19:45:00Z",0.668938]]},"rr25":{"open":0.07091470088430663,"now":0.06720141945671432,"low":0.057450637974385654,"high":0.07092126287455303,"points":[["2026-10-01T14:00:00Z",0.070915],["2026-10-01T14:15:00Z",0.070921],["2026-10-01T14:30:00Z",0.063537],["2026-10-01T14:45:00Z",0.063499],["2026-10-01T15:00:00Z",0.057484],["2026-10-01T15:15:00Z",0.057451],["2026-10-01T15:30:00Z",0.059016],["2026-10-01T15:45:00Z",0.058995],["2026-10-01T16:00:00Z",0.063556],["2026-10-01T16:15:00Z",0.063525],["2026-10-01T16:30:00Z",0.062007],["2026-10-01T16:45:00Z",0.061987],["2026-10-01T17:00:00Z",0.057573],["2026-10-01T17:15:00Z",0.057564],["2026-10-01T17:30:00Z",0.058729],["2026-10-01T17:45:00Z",0.05871],["2026-10-01T18:00:00Z",0.064944],["2026-10-01T18:15:00Z",0.064898],["2026-10-01T18:30:00Z",0.065815],["2026-10-01T18:45:00Z",0.06579],["2026-10-01T19:00:00Z",0.066029],["2026-10-01T19:15:00Z",0.066003],["2026-10-01T19:30:00Z",0.067207],["2026-10-01T19:45:00Z",0.067201]]},"rr25_atm":{"open":0.10641766462173254,"now":0.1004598633493401,"low":0.08760435314867374,"high":0.10642637218144119,"points":[["2026-10-01T14:00:00Z",0.106418],["2026-10-01T14:15:00Z",0.106426],["2026-10-01T14:30:00Z",0.09716],["2026-10-01T14:45:00Z",0.097097],["2026-10-01T15:00:00Z",0.087661],["2026-10-01T15:15:00Z",0.087604],["2026-10-01T15:30:00Z",0.089956],["2026-10-01T15:45:00Z",0.089921],["2026-10-01T16:00:00Z",0.097391],["2026-10-01T16:15:00Z",0.09734],["2026-10-01T16:30:00Z",0.095302],["2026-10-01T16:45:00Z",0.095267],["2026-10-01T17:00:00Z",0.0878],["2026-10-01T17:15:00Z",0.087785],["2026-10-01T17:30:00Z",0.089155],["2026-10-01T17:45:00Z",0.089121],["2026-10-01T18:00:00Z",0.097678],["2026-10-01T18:15:00Z",0.097605],["2026-10-01T18:30:00Z",0.099019],["2026-10-01T18:45:00Z",0.098973],["2026-10-01T19:00:00Z",0.099542],["2026-10-01T19:15:00Z",0.099498],["2026-10-01T19:30:00Z",0.100471],["2026-10-01T19:45:00Z",0.10046]]},"bf25":{"open":0.02170832376308951,"now":0.02003470555206288,"low":0.01953418809052032,"high":0.02188930027337077,"points":[["2026-10-01T14:00:00Z",0.021708],["2026-10-01T14:15:00Z",0.021708],["2026-10-01T14:30:00Z",0.021528],["2026-10-01T14:45:00Z",0.021524],["2026-10-01T15:00:00Z",0.020039],["2026-10-01T15:15:00Z",0.020032],["2026-10-01T15:30:00Z",0.019539],["2026-10-01T15:45:00Z",0.019534],["2026-10-01T16:00:00Z",0.020979],["2026-10-01T16:15:00Z",0.020974],["2026-10-01T16:30:00Z",0.020931],["2026-10-01T16:45:00Z",0.020925],["2026-10-01T17:00:00Z",0.020077],["2026-10-01T17:15:00Z",0.020075],["2026-10-01T17:30:00Z",0.019915],["2026-10-01T17:45:00Z",0.019908],["2026-10-01T18:00:00Z",0.021889],["2026-10-01T18:15:00Z",0.021882],["2026-10-01T18:30:00Z",0.020528],["2026-10-01T18:45:00Z",0.02052],["2026-10-01T19:00:00Z",0.020305],["2026-10-01T19:15:00Z",0.020299],["2026-10-01T19:30:00Z",0.020039],["2026-10-01T19:45:00Z",0.020035]]},"rr10":{"open":0.1177479887366617,"now":0.11281546331034087,"low":0.10199341176051857,"high":0.11830686978477556,"points":[["2026-10-01T14:00:00Z",0.117748],["2026-10-01T14:15:00Z",0.117767],["2026-10-01T14:30:00Z",0.111457],["2026-10-01T14:45:00Z",0.111384],["2026-10-01T15:00:00Z",0.102758],["2026-10-01T15:15:00Z",0.102689],["2026-10-01T15:30:00Z",0.106628],["2026-10-01T15:45:00Z",0.106583],["2026-10-01T16:00:00Z",0.111015],["2026-10-01T16:15:00Z",0.110953],["2026-10-01T16:30:00Z",0.106744],["2026-10-01T16:45:00Z",0.106706],["2026-10-01T17:00:00Z",0.104127],["2026-10-01T17:15:00Z",0.104099],["2026-10-01T17:30:00Z",0.102038],["2026-10-01T17:45:00Z",0.101993],["2026-10-01T18:00:00Z",0.118307],["2026-10-01T18:15:00Z",0.118224],["2026-10-01T18:30:00Z",0.112941],["2026-10-01T18:45:00Z",0.112887],["2026-10-01T19:00:00Z",0.112242],["2026-10-01T19:15:00Z",0.112193],["2026-10-01T19:30:00Z",0.11284],["2026-10-01T19:45:00Z",0.112815]]},"href":"MSTR_2026-10-01.html"},{"symbol":"SPY","type":"etf","active":true,"notes":"SPDR S&P 500 ETF","last_snapshot":{"captured_at_utc":"2026-10-01T19:45:00Z","status":"ok","error":null},"tiers":[{"name":"short","interval_minutes":15,"last_poll":"2026-10-01T19:45:00Z"},{"name":"near","interval_minutes":30,"last_poll":"2026-10-01T19:30:00Z"},{"name":"mid","interval_minutes":60,"last_poll":"2026-10-01T19:00:00Z"},{"name":"long","interval_minutes":120,"last_poll":"2026-10-01T18:00:00Z"}],"day":"2026-10-01","session":{"open":"2026-10-01T13:30:00Z","close":"2026-10-01T20:00:00Z"},"stored":{"snapshots":24,"problems":0,"expirations":28,"quotes":76905},"spot":{"open":761.45,"now":764.63,"low":759.68,"high":764.78,"points":[["2026-10-01T14:00:00Z",761.45],["2026-10-01T14:15:00Z",760.87],["2026-10-01T14:30:00Z",760.6],["2026-10-01T14:45:00Z",761.44],["2026-10-01T15:00:00Z",760.46],["2026-10-01T15:15:00Z",760.08],["2026-10-01T15:30:00Z",760.375],["2026-10-01T15:45:00Z",759.68],["2026-10-01T16:00:00Z",760.7895],["2026-10-01T16:15:00Z",760.73],["2026-10-01T16:30:00Z",761.33],["2026-10-01T16:45:00Z",761.99],["2026-10-01T17:00:00Z",760.83],["2026-10-01T17:15:00Z",761.97],["2026-10-01T17:30:00Z",764.27],["2026-10-01T17:45:00Z",764.7799],["2026-10-01T18:00:00Z",763.074],["2026-10-01T18:15:00Z",763.64],["2026-10-01T18:30:00Z",764.02],["2026-10-01T18:45:00Z",764.32],["2026-10-01T19:00:00Z",764.78],["2026-10-01T19:15:00Z",764.56],["2026-10-01T19:30:00Z",764.52],["2026-10-01T19:45:00Z",764.63]]},"atm":{"open":0.13816117941346376,"now":0.13438646267144502,"low":0.13438020127330794,"high":0.1427771642974877,"points":[["2026-10-01T14:00:00Z",0.138161],["2026-10-01T14:15:00Z",0.138166],["2026-10-01T14:30:00Z",0.142509],["2026-10-01T14:45:00Z",0.142514],["2026-10-01T15:00:00Z",0.140021],["2026-10-01T15:15:00Z",0.140026],["2026-10-01T15:30:00Z",0.142076],["2026-10-01T15:45:00Z",0.14208],["2026-10-01T16:00:00Z",0.142773],["2026-10-01T16:15:00Z",0.142777],["2026-10-01T16:30:00Z",0.140125],["2026-10-01T16:45:00Z",0.14013],["2026-10-01T17:00:00Z",0.138179],["2026-10-01T17:15:00Z",0.138184],["2026-10-01T17:30:00Z",0.138022],["2026-10-01T17:45:00Z",0.138027],["2026-10-01T18:00:00Z",0.134748],["2026-10-01T18:15:00Z",0.134755],["2026-10-01T18:30:00Z",0.137209],["2026-10-01T18:45:00Z",0.137215],["2026-10-01T19:00:00Z",0.135968],["2026-10-01T19:15:00Z",0.135973],["2026-10-01T19:30:00Z",0.13438],["2026-10-01T19:45:00Z",0.134386]]},"rr25":{"open":-0.03899635392768591,"now":-0.037834893083215915,"low":-0.04237047652332279,"high":-0.037834893083215915,"points":[["2026-10-01T14:00:00Z",-0.038996],["2026-10-01T14:15:00Z",-0.039031],["2026-10-01T14:30:00Z",-0.042192],["2026-10-01T14:45:00Z",-0.042308],["2026-10-01T15:00:00Z",-0.040558],["2026-10-01T15:15:00Z",-0.040637],["2026-10-01T15:30:00Z",-0.041855],["2026-10-01T15:45:00Z",-0.041853],["2026-10-01T16:00:00Z",-0.042345],["2026-10-01T16:15:00Z",-0.04237],["2026-10-01T16:30:00Z",-0.041155],["2026-10-01T16:45:00Z",-0.041157],["2026-10-01T17:00:00Z",-0.040192],["2026-10-01T17:15:00Z",-0.04019],["2026-10-01T17:30:00Z",-0.039561],["2026-10-01T17:45:00Z",-0.039561],["2026-10-01T18:00:00Z",-0.037837],["2026-10-01T18:15:00Z",-0.037864],["2026-10-01T18:30:00Z",-0.038979],["2026-10-01T18:45:00Z",-0.039005],["2026-10-01T19:00:00Z",-0.038207],["2026-10-01T19:15:00Z",-0.038201],["2026-10-01T19:30:00Z",-0.037839],["2026-10-01T19:45:00Z",-0.037835]]},"rr25_atm":{"open":-0.28225261316700756,"now":-0.281537978834346,"low":-0.2968666660789083,"high":-0.2807989026376894,"points":[["2026-10-01T14:00:00Z",-0.282253],["2026-10-01T14:15:00Z",-0.282496],["2026-10-01T14:30:00Z",-0.296064],["2026-10-01T14:45:00Z",-0.296867],["2026-10-01T15:00:00Z",-0.289659],["2026-10-01T15:15:00Z",-0.290209],["2026-10-01T15:30:00Z",-0.2946],["2026-10-01T15:45:00Z",-0.294574],["2026-10-01T16:00:00Z",-0.296587],["2026-10-01T16:15:00Z",-0.296759],["2026-10-01T16:30:00Z",-0.293703],["2026-10-01T16:45:00Z",-0.293704],["2026-10-01T17:00:00Z",-0.29087],["2026-10-01T17:15:00Z",-0.290842],["2026-10-01T17:30:00Z",-0.286627],["2026-10-01T17:45:00Z",-0.28662],["2026-10-01T18:00:00Z",-0.280799],["2026-10-01T18:15:00Z",-0.280988],["2026-10-01T18:30:00Z",-0.284085],["2026-10-01T18:45:00Z",-0.284263],["2026-10-01T19:00:00Z",-0.280997],["2026-10-01T19:15:00Z",-0.280947],["2026-10-01T19:30:00Z",-0.281583],["2026-10-01T19:45:00Z",-0.281538]]},"bf25":{"open":0.005299747762144896,"now":0.005038592905595274,"low":0.005038592905595274,"high":0.005551348146254409,"points":[["2026-10-01T14:00:00Z",0.0053],["2026-10-01T14:15:00Z",0.005304],["2026-10-01T14:30:00Z",0.005537],["2026-10-01T14:45:00Z",0.005551],["2026-10-01T15:00:00Z",0.005293],["2026-10-01T15:15:00Z",0.005306],["2026-10-01T15:30:00Z",0.005352],["2026-10-01T15:45:00Z",0.005351],["2026-10-01T16:00:00Z",0.005432],["2026-10-01T16:15:00Z",0.005435],["2026-10-01T16:30:00Z",0.005332],["2026-10-01T16:45:00Z",0.005331],["2026-10-01T17:00:00Z",0.005219],["2026-10-01T17:15:00Z",0.005218],["2026-10-01T17:30:00Z",0.005049],["2026-10-01T17:45:00Z",0.005049],["2026-10-01T18:00:00Z",0.005051],["2026-10-01T18:15:00Z",0.005054],["2026-10-01T18:30:00Z",0.0051],["2026-10-01T18:45:00Z",0.005103],["2026-10-01T19:00:00Z",0.005098],["2026-10-01T19:15:00Z",0.005097],["2026-10-01T19:30:00Z",0.00504],["2026-10-01T19:45:00Z",0.005039]]},"rr10":{"open":-0.08661616455485391,"now":-0.083979300469858,"low":-0.09375796772071793,"high":-0.083979300469858,"points":[["2026-10-01T14:00:00Z",-0.086616],["2026-10-01T14:15:00Z",-0.086697],["2026-10-01T14:30:00Z",-0.093371],["2026-10-01T14:45:00Z",-0.093636],["2026-10-01T15:00:00Z",-0.089899],["2026-10-01T15:15:00Z",-0.090088],["2026-10-01T15:30:00Z",-0.092827],["2026-10-01T15:45:00Z",-0.092817],["2026-10-01T16:00:00Z",-0.093701],["2026-10-01T16:15:00Z",-0.093758],["2026-10-01T16:30:00Z",-0.091132],["2026-10-01T16:45:00Z",-0.091133],["2026-10-01T17:00:00Z",-0.089038],["2026-10-01T17:15:00Z",-0.089028],["2026-10-01T17:30:00Z",-0.087704],["2026-10-01T17:45:00Z",-0.087701],["2026-10-01T18:00:00Z",-0.084184],["2026-10-01T18:15:00Z",-0.084244],["2026-10-01T18:30:00Z",-0.086465],["2026-10-01T18:45:00Z",-0.086525],["2026-10-01T19:00:00Z",-0.0847],["2026-10-01T19:15:00Z",-0.084684],["2026-10-01T19:30:00Z",-0.083993],["2026-10-01T19:45:00Z",-0.083979]]},"href":"SPY_2026-10-01.html"},{"symbol":"NVDA","type":"equity","active":true,"notes":"NVIDIA","last_snapshot":{"captured_at_utc":"2026-10-01T19:45:00Z","status":"ok","error":null},"tiers":[{"name":"short","interval_minutes":15,"last_poll":"2026-10-01T19:45:00Z"},{"name":"near","interval_minutes":30,"last_poll":"2026-10-01T19:30:00Z"},{"name":"mid","interval_minutes":60,"last_poll":"2026-10-01T19:00:00Z"},{"name":"long","interval_minutes":120,"last_poll":"2026-10-01T18:00:00Z"}],"day":"2026-10-01","session":{"open":"2026-10-01T13:30:00Z","close":"2026-10-01T20:00:00Z"},"stored":{"snapshots":24,"problems":0,"expirations":21,"quotes":24276},"spot":{"open":229.995,"now":231.5925,"low":229.07,"high":232.18,"points":[["2026-10-01T14:00:00Z",229.995],["2026-10-01T14:15:00Z",229.97],["2026-10-01T14:30:00Z",229.95],["2026-10-01T14:45:00Z",230.5],["2026-10-01T15:00:00Z",229.07],["2026-10-01T15:15:00Z",229.275],["2026-10-01T15:30:00Z",230.47],["2026-10-01T15:45:00Z",229.32],["2026-10-01T16:00:00Z",229.355],["2026-10-01T16:15:00Z",229.979],["2026-10-01T16:30:00Z",230.43],["2026-10-01T16:45:00Z",230.6],["2026-10-01T17:00:00Z",230.1595],["2026-10-01T17:15:00Z",230.585],["2026-10-01T17:30:00Z",231.025],["2026-10-01T17:45:00Z",231.302],["2026-10-01T18:00:00Z",230.535],["2026-10-01T18:15:00Z",230.68],["2026-10-01T18:30:00Z",231.115],["2026-10-01T18:45:00Z",231.72],["2026-10-01T19:00:00Z",232.18],["2026-10-01T19:15:00Z",231.56],["2026-10-01T19:30:00Z",231.4],["2026-10-01T19:45:00Z",231.5925]]},"atm":{"open":0.3122754459696684,"now":0.30555251989380905,"low":0.30174282564028293,"high":0.3122825749930705,"points":[["2026-10-01T14:00:00Z",0.312275],["2026-10-01T14:15:00Z",0.312283],["2026-10-01T14:30:00Z",0.30945],["2026-10-01T14:45:00Z",0.309458],["2026-10-01T15:00:00Z",0.308135],["2026-10-01T15:15:00Z",0.308145],["2026-10-01T15:30:00Z",0.309849],["2026-10-01T15:45:00Z",0.309859],["2026-10-01T16:00:00Z",0.31025],["2026-10-01T16:15:00Z",0.310256],["2026-10-01T16:30:00Z",0.307027],["2026-10-01T16:45:00Z",0.307033],["2026-10-01T17:00:00Z",0.30638],["2026-10-01T17:15:00Z",0.306388],["2026-10-01T17:30:00Z",0.301743],["2026-10-01T17:45:00Z",0.301757],["2026-10-01T18:00:00Z",0.30847],["2026-10-01T18:15:00Z",0.308477],["2026-10-01T18:30:00Z",0.305957],["2026-10-01T18:45:00Z",0.305965],["2026-10-01T19:00:00Z",0.307387],["2026-10-01T19:15:00Z",0.307397],["2026-10-01T19:30:00Z",0.305545],["2026-10-01T19:45:00Z",0.305553]]},"rr25":{"open":-0.030829533892545502,"now":-0.028805452669950216,"low":-0.035366680230175584,"high":-0.028805452669950216,"points":[["2026-10-01T14:00:00Z",-0.03083],["2026-10-01T14:15:00Z",-0.030858],["2026-10-01T14:30:00Z",-0.029699],["2026-10-01T14:45:00Z",-0.029695],["2026-10-01T15:00:00Z",-0.031305],["2026-10-01T15:15:00Z",-0.031305],["2026-10-01T15:30:00Z",-0.035351],["2026-10-01T15:45:00Z",-0.035367],["2026-10-01T16:00:00Z",-0.029824],["2026-10-01T16:15:00Z",-0.029822],["2026-10-01T16:30:00Z",-0.032318],["2026-10-01T16:45:00Z",-0.032303],["2026-10-01T17:00:00Z",-0.031589],["2026-10-01T17:15:00Z",-0.031579],["2026-10-01T17:30:00Z",-0.031662],["2026-10-01T17:45:00Z",-0.031659],["2026-10-01T18:00:00Z",-0.031997],["2026-10-01T18:15:00Z",-0.031995],["2026-10-01T18:30:00Z",-0.032172],["2026-10-01T18:45:00Z",-0.032165],["2026-10-01T19:00:00Z",-0.029762],["2026-10-01T19:15:00Z",-0.029752],["2026-10-01T19:30:00Z",-0.028809],["2026-10-01T19:45:00Z",-0.028805]]},"rr25_atm":{"open":-0.09872544988868578,"now":-0.09427332715161764,"low":-0.11413809670953949,"high":-0.09427332715161764,"points":[["2026-10-01T14:00:00Z",-0.098725],["2026-10-01T14:15:00Z",-0.098814],["2026-10-01T14:30:00Z",-0.095975],["2026-10-01T14:45:00Z",-0.095957],["2026-10-01T15:00:00Z",-0.101595],["2026-10-01T15:15:00Z",-0.101591],["2026-10-01T15:30:00Z",-0.11409],["2026-10-01T15:45:00Z",-0.114138],["2026-10-01T16:00:00Z",-0.096128],["2026-10-01T16:15:00Z",-0.096122],["2026-10-01T16:30:00Z",-0.10526],["2026-10-01T16:45:00Z",-0.105211],["2026-10-01T17:00:00Z",-0.103104],["2026-10-01T17:15:00Z",-0.10307],["2026-10-01T17:30:00Z",-0.10493],["2026-10-01T17:45:00Z",-0.104916],["2026-10-01T18:00:00Z",-0.103729],["2026-10-01T18:15:00Z",-0.103719],["2026-10-01T18:30:00Z",-0.105152],["2026-10-01T18:45:00Z",-0.105127],["2026-10-01T19:00:00Z",-0.096823],["2026-10-01T19:15:00Z",-0.096787],["2026-10-01T19:30:00Z",-0.094289],["2026-10-01T19:45:00Z",-0.094273]]},"bf25":{"open":0.006543803524155345,"now":0.007006437852198233,"low":0.006527703529817963,"high":0.007344797802510461,"points":[["2026-10-01T14:00:00Z",0.006544],["2026-10-01T14:15:00Z",0.006554],["2026-10-01T14:30:00Z",0.006882],["2026-10-01T14:45:00Z",0.006878],["2026-10-01T15:00:00Z",0.00663],["2026-10-01T15:15:00Z",0.006628],["2026-10-01T15:30:00Z",0.007341],["2026-10-01T15:45:00Z",0.007345],["2026-10-01T16:00:00Z",0.006579],["2026-10-01T16:15:00Z",0.006576],["2026-10-01T16:30:00Z",0.00696],["2026-10-01T16:45:00Z",0.006951],["2026-10-01T17:00:00Z",0.006759],["2026-10-01T17:15:00Z",0.006752],["2026-10-01T17:30:00Z",0.006923],["2026-10-01T17:45:00Z",0.006918],["2026-10-01T18:00:00Z",0.006531],["2026-10-01T18:15:00Z",0.006528],["2026-10-01T18:30:00Z",0.006881],["2026-10-01T18:45:00Z",0.006878],["2026-10-01T19:00:00Z",0.006766],["2026-10-01T19:15:00Z",0.006759],["2026-10-01T19:30:00Z",0.00701],["2026-10-01T19:45:00Z",0.007006]]},"rr10":{"open":-0.07043740457909597,"now":-0.06668195715171243,"low":-0.0798005355377549,"high":-0.06668195715171243,"points":[["2026-10-01T14:00:00Z",-0.070437],["2026-10-01T14:15:00Z",-0.070502],["2026-10-01T14:30:00Z",-0.068345],["2026-10-01T14:45:00Z",-0.068329],["2026-10-01T15:00:00Z",-0.071893],["2026-10-01T15:15:00Z",-0.071888],["2026-10-01T15:30:00Z",-0.07977],["2026-10-01T15:45:00Z",-0.079801],["2026-10-01T16:00:00Z",-0.068691],["2026-10-01T16:15:00Z",-0.068684],["2026-10-01T16:30:00Z",-0.073855],["2026-10-01T16:45:00Z",-0.073815],["2026-10-01T17:00:00Z",-0.072394],["2026-10-01T17:15:00Z",-0.072367],["2026-10-01T17:30:00Z",-0.072947],["2026-10-01T17:45:00Z",-0.072935],["2026-10-01T18:00:00Z",-0.072861],["2026-10-01T18:15:00Z",-0.072851],["2026-10-01T18:30:00Z",-0.073405],["2026-10-01T18:45:00Z",-0.073383],["2026-10-01T19:00:00Z",-0.068528],["2026-10-01T19:15:00Z",-0.068499],["2026-10-01T19:30:00Z",-0.066694],["2026-10-01T19:45:00Z",-0.066682]]},"href":"NVDA_2026-10-01.html"},{"symbol":"RUT","type":"index","active":true,"notes":"Russell 2000 Index (cash-settled, European)","last_snapshot":{"captured_at_utc":"2026-10-01T19:45:00Z","status":"ok","error":null},"tiers":[{"name":"short","interval_minutes":15,"last_poll":"2026-10-01T19:45:00Z"},{"name":"near","interval_minutes":30,"last_poll":"2026-10-01T19:30:00Z"},{"name":"mid","interval_minutes":60,"last_poll":"2026-10-01T19:00:00Z"},{"name":"long","interval_minutes":120,"last_poll":"2026-10-01T18:00:00Z"}],"day":"2026-10-01","session":{"open":"2026-10-01T13:30:00Z","close":"2026-10-01T20:00:00Z"},"stored":{"snapshots":24,"problems":0,"expirations":26,"quotes":44676},"spot":{"open":2787.2158,"now":2810.0908,"low":2780.7751,"high":2817.943,"points":[["2026-10-01T14:00:00Z",2787.2158],["2026-10-01T14:15:00Z",2785.2163],["2026-10-01T14:30:00Z",2782.4888],["2026-10-01T14:45:00Z",2781.0452],["2026-10-01T15:00:00Z",2784.1255],["2026-10-01T15:15:00Z",2782.753],["2026-10-01T15:30:00Z",2780.7751],["2026-10-01T15:45:00Z",2782.171],["2026-10-01T16:00:00Z",2785.9807],["2026-10-01T16:15:00Z",2791.4915],["2026-10-01T16:30:00Z",2795.0596],["2026-10-01T16:45:00Z",2800.9148],["2026-10-01T17:00:00Z",2805.3047],["2026-10-01T17:15:00Z",2802.1213],["2026-10-01T17:30:00Z",2805.9626],["2026-10-01T17:45:00Z",2817.943],["2026-10-01T18:00:00Z",2817.8557],["2026-10-01T18:15:00Z",2809.701],["2026-10-01T18:30:00Z",2806.3765],["2026-10-01T18:45:00Z",2810.0193],["2026-10-01T19:00:00Z",2810.2844],["2026-10-01T19:15:00Z",2809.7986],["2026-10-01T19:30:00Z",2808.903],["2026-10-01T19:45:00Z",2810.0908]]},"atm":{"open":0.19863206498267214,"now":0.1949352789437695,"low":0.1944594352406983,"high":0.2034662551156055,"points":[["2026-10-01T14:00:00Z",0.198632],["2026-10-01T14:15:00Z",0.198636],["2026-10-01T14:30:00Z",0.200983],["2026-10-01T14:45:00Z",0.200987],["2026-10-01T15:00:00Z",0.199832],["2026-10-01T15:15:00Z",0.199836],["2026-10-01T15:30:00Z",0.203462],["2026-10-01T15:45:00Z",0.203466],["2026-10-01T16:00:00Z",0.201624],["2026-10-01T16:15:00Z",0.201629],["2026-10-01T16:30:00Z",0.200448],["2026-10-01T16:45:00Z",0.200452],["2026-10-01T17:00:00Z",0.198489],["2026-10-01T17:15:00Z",0.198493],["2026-10-01T17:30:00Z",0.198438],["2026-10-01T17:45:00Z",0.198443],["2026-10-01T18:00:00Z",0.194459],["2026-10-01T18:15:00Z",0.194465],["2026-10-01T18:30:00Z",0.199092],["2026-10-01T18:45:00Z",0.199097],["2026-10-01T19:00:00Z",0.196008],["2026-10-01T19:15:00Z",0.196013],["2026-10-01T19:30:00Z",0.19493],["2026-10-01T19:45:00Z",0.194935]]},"rr25":{"open":-0.03756246843615957,"now":-0.0370391456488168,"low":-0.04161729602418002,"high":-0.03603204275589761,"points":[["2026-10-01T14:00:00Z",-0.037562],["2026-10-01T14:15:00Z",-0.037562],["2026-10-01T14:30:00Z",-0.03836],["2026-10-01T14:45:00Z",-0.038358],["2026-10-01T15:00:00Z",-0.039023],["2026-10-01T15:15:00Z",-0.039019],["2026-10-01T15:30:00Z",-0.041617],["2026-10-01T15:45:00Z",-0.041608],["2026-10-01T16:00:00Z",-0.040395],["2026-10-01T16:15:00Z",-0.040388],["2026-10-01T16:30:00Z",-0.038957],["2026-10-01T16:45:00Z",-0.038952],["2026-10-01T17:00:00Z",-0.037552],["2026-10-01T17:15:00Z",-0.037548],["2026-10-01T17:30:00Z",-0.037633],["2026-10-01T17:45:00Z",-0.03763],["2026-10-01T18:00:00Z",-0.036035],["2026-10-01T18:15:00Z",-0.036032],["2026-10-01T18:30:00Z",-0.03792],["2026-10-01T18:45:00Z",-0.037916],["2026-10-01T19:00:00Z",-0.037251],["2026-10-01T19:15:00Z",-0.037246],["2026-10-01T19:30:00Z",-0.037042],["2026-10-01T19:45:00Z",-0.037039]]},"rr25_atm":{"open":-0.189105764164695,"now":-0.19000740065886695,"low":-0.20454541389040823,"high":-0.18528814837965252,"points":[["2026-10-01T14:00:00Z",-0.189106],["2026-10-01T14:15:00Z",-0.189098],["2026-10-01T14:30:00Z",-0.190861],["2026-10-01T14:45:00Z",-0.190848],["2026-10-01T15:00:00Z",-0.195278],["2026-10-01T15:15:00Z",-0.195255],["2026-10-01T15:30:00Z",-0.204545],["2026-10-01T15:45:00Z",-0.204496],["2026-10-01T16:00:00Z",-0.200349],["2026-10-01T16:15:00Z",-0.200311],["2026-10-01T16:30:00Z",-0.194349],["2026-10-01T16:45:00Z",-0.194319],["2026-10-01T17:00:00Z",-0.189189],["2026-10-01T17:15:00Z",-0.189166],["2026-10-01T17:30:00Z",-0.189647],["2026-10-01T17:45:00Z",-0.189628],["2026-10-01T18:00:00Z",-0.185311],["2026-10-01T18:15:00Z",-0.185288],["2026-10-01T18:30:00Z",-0.190464],["2026-10-01T18:45:00Z",-0.190441],["2026-10-01T19:00:00Z",-0.190046],["2026-10-01T19:15:00Z",-0.190018],["2026-10-01T19:30:00Z",-0.190024],["2026-10-01T19:45:00Z",-0.190007]]},"bf25":{"open":0.004724883171987604,"now":0.004819214646644976,"low":0.004540805272543108,"high":0.004970368886122678,"points":[["2026-10-01T14:00:00Z",0.004725],["2026-10-01T14:15:00Z",0.004727],["2026-10-01T14:30:00Z",0.004797],["2026-10-01T14:45:00Z",0.004796],["2026-10-01T15:00:00Z",0.00475],["2026-10-01T15:15:00Z",0.004748],["2026-10-01T15:30:00Z",0.00497],["2026-10-01T15:45:00Z",0.004966],["2026-10-01T16:00:00Z",0.004803],["2026-10-01T16:15:00Z",0.0048],["2026-10-01T16:30:00Z",0.004679],["2026-10-01T16:45:00Z",0.004675],["2026-10-01T17:00:00Z",0.004609],["2026-10-01T17:15:00Z",0.00461],["2026-10-01T17:30:00Z",0.004612],["2026-10-01T17:45:00Z",0.004609],["2026-10-01T18:00:00Z",0.004542],["2026-10-01T18:15:00Z",0.004541],["2026-10-01T18:30:00Z",0.004703],["2026-10-01T18:45:00Z",0.004704],["2026-10-01T19:00:00Z",0.004814],["2026-10-01T19:15:00Z",0.004815],["2026-10-01T19:30:00Z",0.004816],["2026-10-01T19:45:00Z",0.004819]]},"rr10":{"open":-0.08150046926305751,"now":-0.08055829900333619,"low":-0.08970039567815719,"high":-0.07839676388050512,"points":[["2026-10-01T14:00:00Z",-0.0815],["2026-10-01T14:15:00Z",-0.081498],["2026-10-01T14:30:00Z",-0.08341],["2026-10-01T14:45:00Z",-0.083402],["2026-10-01T15:00:00Z",-0.084662],["2026-10-01T15:15:00Z",-0.084651],["2026-10-01T15:30:00Z",-0.0897],["2026-10-01T15:45:00Z",-0.089676],["2026-10-01T16:00:00Z",-0.087263],["2026-10-01T16:15:00Z",-0.087243],["2026-10-01T16:30:00Z",-0.084179],["2026-10-01T16:45:00Z",-0.084162],["2026-10-01T17:00:00Z",-0.081558],["2026-10-01T17:15:00Z",-0.08155],["2026-10-01T17:30:00Z",-0.081523],["2026-10-01T17:45:00Z",-0.081512],["2026-10-01T18:00:00Z",-0.078407],["2026-10-01T18:15:00Z",-0.078397],["2026-10-01T18:30:00Z",-0.082332],["2026-10-01T18:45:00Z",-0.082323],["2026-10-01T19:00:00Z",-0.081058],["2026-10-01T19:15:00Z",-0.081047],["2026-10-01T19:30:00Z",-0.080563],["2026-10-01T19:45:00Z",-0.080558]]},"href":"RUT_2026-10-01.html"}],"written_out":true,"links":{"/":"index.html","/options":"options.html","/eurodollar":"eurodollar.html","/rates":"rates.html"},"database":{"path":"options_snapshots.db","exists":true}}</script>
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const REFRESH_MS = 60_000;
+const MINUS = '−';
+// Collector health, a page-local axis: how the last snapshot went, not a market view.
+const STATUS = {
+  ok:      { badge: 'od-badge--flat', label: 'ok' },
+  partial: { badge: 'od-badge--flat', label: 'partial' },
+  failed:  { badge: 'od-badge--alert', label: 'failed' },
+  empty:   { badge: 'od-badge--flat', label: 'empty' },
+};
+const SOURCE_LABEL = { yfinance: 'yfinance snapshots', synthetic: 'synthetic data' };
+
+// null when options-db serve sends the page (it loads /api/tickers and keeps refreshing); the data itself when
+// options-db site wrote the page out as a file: a snapshot, with no server to refresh from or edit through.
+const EMBEDDED = JSON.parse(document.getElementById('home-data').textContent);
+const STATIC = Boolean(EMBEDDED?.written_out);
+let data = EMBEDDED;
+let view = 'cards';
+try { view = localStorage.getItem('options-db-home-view') === 'table' ? 'table' : 'cards'; } catch { /* storage blocked */ }
+
+// ------------------------------------------------------------------ formatting
+let timeFormat = null;
+let tzLabel = '';
+const dayFormat = new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' });
+const shortDayFormat = new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric' });
+let localDateFormat = null;
+
+function setTimezone(zone) {
+  timeFormat = new Intl.DateTimeFormat('en-US', { timeZone: zone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+  localDateFormat = new Intl.DateTimeFormat('en-CA', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit' });
+  tzLabel = zone === 'America/New_York' ? 'ET' : zone;
+}
+
+const finite = (v) => typeof v === 'number' && Number.isFinite(v);
+function signed(v, digits) {
+  const size = Math.abs(v).toFixed(digits);
+  return `${Number(size) === 0 ? '' : v > 0 ? '+' : MINUS}${size}`;
+}
+const fmt = {
+  price: (v) => (finite(v) ? v.toFixed(2) : '-'),
+  pct: (v) => (finite(v) ? `${(v * 100).toFixed(2)}%` : '-'),
+  pts: (v) => (finite(v) ? signed(v * 100, 2) : '-'),
+  ratio: (v) => (finite(v) ? signed(v, 2) : '-'),
+  count: (v) => (finite(v) ? v.toLocaleString('en-US') : '-'),
+  day: (iso) => dayFormat.format(new Date(`${iso}T00:00:00Z`)),
+  // HH:MM when the time falls on `day` (YYYY-MM-DD, market time zone), otherwise the date comes first.
+  when: (iso, day, zone = true) => {
+    const ms = Date.parse(iso);
+    const local = localDateFormat.format(ms);
+    const date = local === day ? '' : `${shortDayFormat.format(new Date(`${local}T00:00:00Z`))} `;
+    return `${date}${timeFormat.format(ms)}${zone ? ` ${tzLabel}` : ''}`;
+  },
+};
+
+// The design system's two colour axes. Direction keeps green/red; volatility
+// gets violet/teal, so a vol expansion is never read as a rally.
+const dirAxis = (v) => (finite(v) && v ? (v > 0 ? 'od-up' : 'od-down') : 'od-flat');
+const volAxis = (v) => (finite(v) && v ? (v > 0 ? 'od-vol-long' : 'od-vol-short') : 'od-flat');
+
+// Written out, each ticker carries the file its newest day went to (href); served, the viewer picks the day.
+const viewerUrl = (ticker) => ticker.href ?? `/viewer?ticker=${encodeURIComponent(ticker.symbol)}`;
+const hasViewer = (ticker) => Boolean(STATIC ? ticker.href : ticker.day);
+
+function node(tag, className, text) {
+  const element = document.createElement(tag);
+  if (className) element.className = className;
+  if (text != null) element.textContent = text;
+  return element;
+}
+
+const text = (value) => document.createTextNode(value);
+
+/** A signed figure: the sign comes from data-sign so the colour class stays free. */
+function delta(value, digits, axis, unit) {
+  const span = node('span', `od-delta${axis ? ` ${axis}` : ''}`);
+  const size = Math.abs(value).toFixed(digits);
+  span.dataset.sign = Number(size) === 0 ? '0' : value < 0 ? '-' : '+';
+  span.append(text(size));
+  if (unit) span.append(node('span', `od-unit${unit === '%' ? '' : ' word'}`, unit));
+  return span;
+}
+
+/** An em dash, the only empty value the system allows. */
+const nothing = () => node('span', 'od-null');
+
+function badge(className, label, dot) {
+  const span = node('span', `od-badge ${className}`);
+  if (dot) span.append(node('span', `od-dot${dot === 'pulse' ? ' od-dot--pulse' : ''}`));
+  span.append(text(label));
+  return span;
+}
+
+// ------------------------------------------------------------------ tiles
+// `axis` colours the change (and the sparkline): spot moves on the direction
+// axis, ATM IV on the volatility axis, and RR25 on direction because a
+// negative risk reversal is downside demand, not vol expansion.
+const TILES = [
+  {
+    key: 'spot', label: () => 'Spot', derived: false, axis: dirAxis,
+    value: (v) => [v.toFixed(2), ''],
+    range: fmt.price,
+    change: (t) => {
+      const points = t.now - t.open;
+      return [delta(points, 2, dirAxis(points)), text(' ('), delta((t.now / t.open - 1) * 100, 2, dirAxis(points)), text('%)')];
+    },
+  },
+  {
+    key: 'atm', label: (days) => `${days}-day ATM IV`, derived: true, axis: volAxis,
+    value: (v) => [(v * 100).toFixed(2), '%'],
+    range: fmt.pct,
+    change: (t) => [delta((t.now - t.open) * 100, 2, volAxis(t.now - t.open), 'pts')],
+  },
+  {
+    key: 'rr25', label: (days) => `${days}-day RR25`, derived: true, axis: dirAxis, signedValue: true,
+    value: (v) => [(v * 100).toFixed(2), 'pts'],
+    range: fmt.pts,
+    change: (t) => [delta((t.now - t.open) * 100, 2, dirAxis(t.now - t.open), 'pts')],
+  },
+];
+
+/** A tile's value as plain text, for the sparkline's tooltip and aria-label. */
+function plain(tile, v) {
+  const [figure, unit] = tile.value(v);
+  return unit === '%' ? `${figure}%` : unit ? `${figure} ${unit}` : figure;
+}
+
+// ------------------------------------------------------------------ sparkline
+function sparkline(track, session, format, name, axis) {
+  const box = node('span', `od-spark spark ${axis}`);
+  const points = track.points.map(([t, v]) => ({ t: Date.parse(t), v }));
+  let t0 = session ? Date.parse(session.open) : points[0].t;
+  let t1 = session ? Date.parse(session.close) : points[points.length - 1].t;
+  t0 = Math.min(t0, points[0].t);
+  t1 = Math.max(t1, points[points.length - 1].t, t0 + 60_000);
+  const flat = track.high === track.low;
+  const x = (t) => ((t - t0) / (t1 - t0)) * 100;
+  const y = (v) => (flat ? 50 : 8 + (1 - (v - track.low) / (track.high - track.low)) * 84);  // percent of the box height
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 100 100');
+  svg.setAttribute('preserveAspectRatio', 'none');
+  svg.setAttribute('aria-hidden', 'true');
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('class', 'od-spark-line');
+  path.setAttribute('d', points.map((p, i) => `${i ? 'L' : 'M'}${x(p.t).toFixed(2)},${y(p.v).toFixed(2)}`).join(''));
+  svg.append(path);
+  const place = (element, p) => { element.style.left = `${x(p.t)}%`; element.style.top = `${y(p.v)}%`; };
+  const dot = node('span', 'spark-dot');
+  place(dot, points[points.length - 1]);
+  const cross = node('span', 'spark-cross');
+  const hover = node('span', 'spark-hover');
+  cross.hidden = true;
+  hover.hidden = true;
+  box.append(svg, dot, cross, hover);
+  box.setAttribute('role', 'img');
+  box.setAttribute('aria-label', `${name} through the day: first ${format(track.open)}, low ${format(track.low)}, high ${format(track.high)}, last ${format(track.now)}`);
+
+  box.addEventListener('pointermove', (event) => {
+    const rect = box.getBoundingClientRect();
+    const at = t0 + ((event.clientX - rect.left) / rect.width) * (t1 - t0);
+    const nearest = points.reduce((best, p) => (Math.abs(p.t - at) < Math.abs(best.t - at) ? p : best), points[0]);
+    cross.style.left = `${x(nearest.t)}%`;
+    place(hover, nearest);
+    cross.hidden = false;
+    hover.hidden = false;
+    showTooltip(event, format(nearest.v), `${name} at ${timeFormat.format(nearest.t)} ${tzLabel}`);
+  });
+  box.addEventListener('pointerleave', () => { cross.hidden = true; hover.hidden = true; hideTooltip(); });
+  return box;
+}
+
+/** No history for this measure: a flat dashed rule, never an invented line. */
+function nullSparkline() {
+  const box = node('span', 'od-spark od-spark--null spark');
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 100 100');
+  svg.setAttribute('preserveAspectRatio', 'none');
+  svg.setAttribute('aria-hidden', 'true');
+  const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  line.setAttribute('class', 'od-spark-line');
+  line.setAttribute('d', 'M0,50L100,50');
+  svg.append(line);
+  box.append(svg);
+  return box;
+}
+
+function showTooltip(event, value, when) {
+  const tooltip = $('tooltip');
+  tooltip.replaceChildren(node('div', 'value od-n', value), node('div', 'when', when));
+  tooltip.hidden = false;
+  const { width, height } = tooltip.getBoundingClientRect();
+  tooltip.style.left = `${Math.max(8, Math.min(event.clientX + 14, innerWidth - width - 8))}px`;
+  tooltip.style.top = `${Math.max(8, Math.min(event.clientY + 14, innerHeight - height - 8))}px`;
+}
+function hideTooltip() { $('tooltip').hidden = true; }
+
+// ------------------------------------------------------------------ cards
+function card(ticker) {
+  const linked = hasViewer(ticker);
+  const article = node('article', `od-panel ticker${linked ? ' linked' : ''}${ticker.active ? '' : ' inactive'}`);
+
+  const head = node('div', 'od-panel-head card-head');
+  const title = node('h2', 'od-h3');
+  if (linked) {
+    const link = node('a', null, ticker.symbol);
+    link.href = viewerUrl(ticker);
+    link.title = `Open the ${ticker.symbol} IV surface`;
+    title.append(link);
+  } else {
+    title.textContent = ticker.symbol;
+  }
+  head.append(title, badge('od-badge--flat', ticker.type));
+  if (!ticker.active) head.append(badge('od-badge--flat', 'inactive'));
+
+  const last = ticker.last_snapshot;
+  const status = node('span', 'status');
+  if (last) {
+    const state = STATUS[last.status] ?? STATUS.empty;
+    // Collecting right now: the accent and a pulsing dot, the system's live state.
+    const live = data.market_open && ticker.active && last.status !== 'failed';
+    status.append(live ? badge('od-badge--live', state.label, 'pulse') : badge(state.badge, state.label, true));
+    status.append(node('span', 'od-panel-meta', fmt.when(last.captured_at_utc, localDateFormat.format(Date.now()))));
+    if (last.error) status.title = last.error;
+  } else {
+    status.append(badge(STATUS.empty.badge, 'no snapshots'));
+  }
+  head.append(status);
+  article.append(head);
+
+  const body = node('div', 'od-panel-body');
+  article.append(body);
+  if (ticker.notes) body.append(node('p', 'od-small notes', ticker.notes));
+
+  if (!linked) {
+    body.append(node('div', 'od-empty', 'No snapshots stored yet. The next collector run fills this in.'), footer(ticker));
+    return article;
+  }
+
+  const tiles = node('div', 'tiles');
+  for (const tile of TILES) {
+    const track = ticker[tile.key];
+    const label = tile.label(data.target_days);
+    const box = node('div', 'od-readout');
+    box.append(node('span', 'od-readout-label', label));
+
+    if (!track) {
+      const missing = node('span', 'od-readout-value');
+      missing.append(nothing());
+      box.append(missing, node('span', 'od-readout-note', 'no history yet'), nullSparkline());
+      tiles.append(box);
+      continue;
+    }
+
+    const axis = tile.axis(track.now - track.open);
+    const [figure, unit] = tile.value(track.now);
+    const value = node('span', `od-readout-value${tile.derived ? ' od-derived' : ''}`);
+    if (tile.signedValue) {
+      value.append(delta(Number(figure), 2, dirAxis(track.now), unit));
+    } else {
+      value.append(text(figure));
+      if (unit) value.append(node('span', `od-unit${unit === '%' ? '' : ' word'}`, unit));
+    }
+    if (tile.derived) value.title = 'Derived from the smile fitted to stored bid/ask mids';
+    box.append(value, node('span', 'od-readout-note', ''));
+    box.lastChild.append(...tile.change(track));
+
+    const spark = sparkline(track, ticker.session, (v) => plain(tile, v), label, axis);
+    if (linked) spark.addEventListener('click', () => { location.href = viewerUrl(ticker); });
+    box.append(spark, node('span', 'od-readout-note', `${tile.range(track.low)} to ${tile.range(track.high)}`));
+    tiles.append(box);
+  }
+  body.append(tiles);
+
+  const facts = node('div', 'facts');
+  facts.append(badge('od-badge--derived', 'Derived'));
+  const fact = (name, title, value) => {
+    const span = node('span');
+    const abbr = node('abbr', null, name);
+    abbr.title = title;
+    span.append(abbr, text(' '), node('b', null, value));
+    facts.append(span);
+  };
+  const now = (key) => ticker[key]?.now;
+  fact('RR25/ATM', 'Risk reversal as a fraction of ATM IV: skew relative to the vol level', fmt.ratio(now('rr25_atm')));
+  fact('BF25', 'Butterfly: average 25-delta IV minus ATM IV, in vol points', `${fmt.pts(now('bf25'))} pts`);
+  fact('RR10', '10-delta call IV minus 10-delta put IV, in vol points', `${fmt.pts(now('rr10'))} pts`);
+  body.append(facts, footer(ticker));
+  return article;
+}
+
+function footer(ticker) {
+  const foot = node('div', 'foot');
+  const tiers = node('ul', 'tiers');
+  const nowMs = Date.parse(data.generated_at);
+  const reference = ticker.day ?? localDateFormat.format(nowMs);
+  tiers.setAttribute('aria-label', `Last poll per tier, ${tzLabel}`);
+  tiers.append(node('li', null, `Last poll (${tzLabel})`));
+  for (const tier of ticker.tiers) {
+    const item = node('li');
+    item.append(node('span', 'name', tier.name));
+    if (!tier.last_poll) {
+      item.append(nothing());
+      item.title = `${tier.name} tier, polled every ${tier.interval_minutes} min; never polled`;
+    } else {
+      // Past its refresh window: the system's stale treatment, not a warning icon.
+      const late = data.market_open && ticker.active
+        && nowMs - Date.parse(tier.last_poll) > (tier.interval_minutes + 5) * 60_000;
+      const when = node('time', late ? 'od-stale' : null, fmt.when(tier.last_poll, reference, false));
+      when.dateTime = tier.last_poll;
+      item.append(when);
+      item.title = `${tier.name} tier, polled every ${tier.interval_minutes} min`
+        + (late ? `; last poll is more than ${tier.interval_minutes + 5} min old` : '');
+    }
+    tiers.append(item);
+  }
+  foot.append(tiers);
+  if (ticker.stored) {
+    const s = ticker.stored;
+    const line = node('div');
+    line.append(text(`Stored ${fmt.day(ticker.day)}: `), node('span', 'od-n', fmt.count(s.snapshots)), text(' snapshots · '),
+      node('span', 'od-n', fmt.count(s.expirations)), text(' expirations · '),
+      node('span', 'od-n', fmt.count(s.quotes)), text(' quotes'));
+    if (s.problems) line.append(text(' · '), node('span', 'od-n', fmt.count(s.problems)), text(' partial or failed'));
+    foot.append(line);
+  }
+  if (!STATIC) foot.append(actions(ticker));
+  return foot;
+}
+
+// ------------------------------------------------------------------ editing config/tickers.yaml
+function actions(ticker) {
+  const row = node('div', 'actions');
+  const toggle = node('button', 'od-btn', ticker.active ? 'Disable' : 'Enable');
+  toggle.type = 'button';
+  toggle.title = ticker.active
+    ? `Stop collecting ${ticker.symbol}, keeping it in the config`
+    : `Collect ${ticker.symbol} again from the next wake-up`;
+  toggle.addEventListener('click', () => run(toggle, () =>
+    change('POST', tickerUrl(ticker.symbol), { active: !ticker.active })));
+
+  const remove = node('button', 'od-btn danger', 'Remove');
+  remove.type = 'button';
+  remove.title = `Remove ${ticker.symbol} from the config; stored snapshots are kept`;
+  remove.addEventListener('click', () => {
+    if (!confirm(`Remove ${ticker.symbol} from the config?\n\nStored snapshots are kept.`)) return;
+    run(remove, () => change('DELETE', tickerUrl(ticker.symbol)));
+  });
+  row.append(toggle, remove);
+  return row;
+}
+
+const tickerUrl = (symbol) => `/api/tickers/${encodeURIComponent(symbol)}`;
+
+async function change(method, path, body) {
+  const response = await fetch(path, {
+    method, cache: 'no-store',
+    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw Object.assign(new Error(result.error ?? `${method} failed (${response.status})`), { force: result.force === true });
+  }
+  return result;
+}
+
+/** Run one edit from a button, then reload the page data. The buttons are replaced by that reload. */
+async function run(button, action) {
+  button.disabled = true;
+  try {
+    flash((await action()).message, 'good');
+    await load();
+  } catch (error) {
+    flash(error.message, 'bad');
+    button.disabled = false;
+  }
+}
+
+let flashTimer = 0;
+function flash(message, kind) {
+  const box = $('flash');
+  box.className = `od-contra message ${kind}`;
+  box.replaceChildren(node('span', 'od-contra-label', kind === 'bad' ? 'That did not work' : 'Done'), text(message));
+  box.hidden = false;
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => { box.hidden = true; }, 15_000);
+}
+
+// ------------------------------------------------------------------ table
+function renderTable() {
+  const days = data.target_days;
+  const columns = [
+    ['Ticker', (t) => t, 'left'],
+    ['Status', (t) => t.last_snapshot?.status ?? 'none', 'left'],
+    ['Last snapshot', (t) => (t.last_snapshot ? fmt.when(t.last_snapshot.captured_at_utc, '') : null), 'left'],
+    ['Spot', (t) => fmt.price(t.spot?.now)],
+    ['Spot change', (t) => (t.spot
+      ? `${signed(t.spot.now - t.spot.open, 2)} (${signed((t.spot.now / t.spot.open - 1) * 100, 2)}%)` : null)],
+    [`${days}-day ATM IV`, (t) => fmt.pct(t.atm?.now), null, 'derived'],
+    ['ATM change (pts)', (t) => (t.atm ? fmt.pts(t.atm.now - t.atm.open) : null), null, 'derived'],
+    [`${days}-day RR25 (pts)`, (t) => fmt.pts(t.rr25?.now), null, 'derived'],
+    ['RR25 change (pts)', (t) => (t.rr25 ? fmt.pts(t.rr25.now - t.rr25.open) : null), null, 'derived'],
+    ['RR25/ATM', (t) => fmt.ratio(t.rr25_atm?.now), null, 'derived'],
+    ['BF25 (pts)', (t) => fmt.pts(t.bf25?.now), null, 'derived'],
+    ['RR10 (pts)', (t) => fmt.pts(t.rr10?.now), null, 'derived'],
+    ['Snapshots', (t) => fmt.count(t.stored?.snapshots)],
+    ['Expirations', (t) => fmt.count(t.stored?.expirations)],
+    ['Quotes', (t) => fmt.count(t.stored?.quotes)],
+    ['Actions', () => '', 'left'],
+  ];
+  const table = $('table');
+  table.replaceChildren();
+  table.append(node('caption', null, 'Latest day with data per ticker; changes are since that day’s first snapshot. '
+    + 'Dotted values are derived from the smile fitted to stored bid/ask mids.'));
+  const head = table.createTHead().insertRow();
+  for (const [label, , align] of columns) {
+    const th = node('th', align ? null : 'od-num', label);
+    th.scope = 'col';
+    head.append(th);
+  }
+  const body = table.createTBody();
+  for (const ticker of data.tickers) {
+    const row = body.insertRow();
+    if (!ticker.active) row.className = 'od-flat';
+    for (const [label, value, align, status] of columns) {
+      const cell = row.insertCell();
+      if (!align) cell.className = 'od-num';
+      if (status === 'derived') cell.classList.add('od-derived');
+      if (label === 'Ticker') {
+        if (hasViewer(ticker)) {
+          const link = node('a', null, ticker.symbol);
+          link.href = viewerUrl(ticker);
+          cell.append(link);
+          cell.append(text(` ${shortDayFormat.format(new Date(`${ticker.day}T00:00:00Z`))}`));
+        } else {
+          cell.textContent = ticker.symbol;
+        }
+      } else if (label === 'Actions') {
+        if (!STATIC) cell.append(actions(ticker));
+      } else {
+        const rendered = value(ticker);
+        // The system's only empty value is an em dash, so a missing number never reads as a zero.
+        if (rendered == null || rendered === '-') cell.append(nothing());
+        else cell.textContent = rendered;
+      }
+    }
+  }
+}
+
+// ------------------------------------------------------------------ page
+function render() {
+  setTimezone(data.timezone);
+  const sources = data.sources.map((s) => SOURCE_LABEL[s] ?? s);
+  const at = `${timeFormat.format(Date.parse(data.generated_at))} ${tzLabel}`;
+  // A written-out copy is read by people who never saw this machine: no file paths, no commands.
+  $('subtitle').textContent = (STATIC
+    ? [sources.length ? `Option chains from ${sources.map((s) => s.replace(' snapshots', '')).join(' + ')}` : 'no snapshots yet',
+      `snapshot of ${fmt.day(localDateFormat.format(Date.parse(data.generated_at)))}, ${at}`]
+    : [sources.length ? sources.join(' + ') : 'no snapshots yet', data.database.path,
+      `market ${data.market_open ? 'open' : 'closed'}`, `updated ${at}`]).join(' · ');
+  $('note').textContent = `${data.target_days}-day values interpolate the two expirations around ${data.target_days} days, `
+    + 'read off each chain’s smile fitted to bid/ask mids. ATM IV is the fit at the forward. RR25 is the 25-delta call IV minus the 25-delta put IV, '
+    + 'negative when puts are richer. Changes are since the day’s first snapshot. Select a ticker to open its IV surface.'
+    + (STATIC ? ' This is a snapshot taken at the time above; it does not update.' : '');
+
+  const message = $('message');
+  if (!data.database.exists) {
+    message.replaceChildren(
+      node('span', 'od-contra-label', 'Nothing collected yet'),
+      text(`No database at ${data.database.path} yet. Take a first snapshot with `),
+      node('code', null, 'options-db run --once'), text(', or look around with synthetic data: '),
+      node('code', null, 'options-db simulate'), text(', then '),
+      node('code', null, 'options-db serve --db data/synthetic.db'), text('.'),
+    );
+    message.hidden = false;
+  } else {
+    message.hidden = true;
+  }
+  $('cards').replaceChildren(...data.tickers.map(card));
+  renderTable();
+  applyView();
+}
+
+function applyView() {
+  document.querySelectorAll('[data-view]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.view === view)));
+  $('cards').hidden = view !== 'cards';
+  $('table-view').hidden = view !== 'table';
+  // Compact density is for the dense table; the cards keep the comfortable rhythm.
+  document.documentElement.dataset.density = view === 'table' ? 'compact' : 'comfortable';
+}
+
+// ------------------------------------------------------------------ add dialog
+const dialog = $('add-dialog');
+let addAnyway = false;  // the yfinance check failed and the user may insist
+
+$('add-open').addEventListener('click', () => {
+  const types = data?.asset_types ?? ['equity', 'etf', 'index'];
+  $('add-form').reset();
+  $('add-type').replaceChildren(...types.map((type) => new Option(type, type, type === 'etf', type === 'etf')));
+  if (data?.config_path) $('add-path').textContent = data.config_path;
+  setAddStatus('', '');
+  dialog.showModal();
+  $('add-symbol').focus();
+});
+$('add-cancel').addEventListener('click', () => dialog.close());
+$('add-symbol').addEventListener('input', () => { if (addAnyway) setAddStatus('', ''); });
+
+function setAddStatus(message, kind) {
+  addAnyway = kind === 'force';
+  $('add-submit').textContent = addAnyway ? 'Add without checking' : 'Check and add';
+  const box = $('add-status');
+  box.className = `dialog-status${kind === 'force' ? ' bad' : ''}`;
+  box.textContent = message;
+  box.hidden = !message;
+}
+
+$('add-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const submit = $('add-submit');
+  const body = {
+    symbol: $('add-symbol').value.trim().toUpperCase(),
+    type: $('add-type').value,
+    yf_symbol: $('add-yf').value.trim(),
+    notes: $('add-notes').value.trim(),
+    active: $('add-active').checked,
+    verify: !addAnyway,
+  };
+  submit.disabled = true;
+  $('add-status').className = 'dialog-status';
+  $('add-status').textContent = body.verify
+    ? `Checking yfinance for ${body.yf_symbol || body.symbol} options...`
+    : `Adding ${body.symbol}...`;
+  $('add-status').hidden = false;
+  try {
+    const result = await change('POST', '/api/tickers', body);
+    dialog.close();
+    flash(result.message, 'good');
+    await load();
+  } catch (error) {
+    setAddStatus(error.force ? `${error.message} Press again to add it anyway.` : error.message, error.force ? 'force' : 'bad');
+    $('add-status').classList.add('bad');
+  } finally {
+    submit.disabled = false;
+  }
+});
+
+document.querySelectorAll('[data-view]').forEach((button) => button.addEventListener('click', () => {
+  view = button.dataset.view;
+  try { localStorage.setItem('options-db-home-view', view); } catch { /* storage blocked */ }
+  if (data) applyView();
+}));
+
+async function load() {
+  document.body.classList.add('refreshing');
+  try {
+    const response = await fetch('/api/tickers', { cache: 'no-store' });
+    const body = await response.json();
+    if (!response.ok) throw new Error(body.error ?? response.statusText);
+    data = body;
+    render();
+    document.body.classList.add('loaded');
+  } catch (error) {
+    const text = `Could not load tickers: ${error.message}`;
+    if (data) {
+      $('subtitle').textContent = `${text} (showing the last data received)`;
+    } else {
+      $('subtitle').textContent = text;
+    }
+  } finally {
+    document.body.classList.remove('refreshing');
+  }
+}
+
+applyView();
+if (STATIC) {
+  $('add-open').hidden = true;   // nothing to write through
+  // options-db site maps each in-app route to the file it wrote; a route it did not write is hidden.
+  const links = EMBEDDED.links || {};
+  $('dashboards').querySelectorAll('a').forEach((link) => {
+    const to = links[link.getAttribute('href')];
+    if (to) link.setAttribute('href', to);
+    else link.hidden = true;
+  });
+  render();
+} else {
+  load();
+  setInterval(() => { if (!document.hidden) load(); }, REFRESH_MS);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && data) load(); });
+}
+</script>
+</body>
+</html>

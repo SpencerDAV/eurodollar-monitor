@@ -9,7 +9,7 @@ dollar funding system side by side.
   NVDA, MSTR, GLD and TLT, polled every 15–120 minutes by expiry. Every metric
   (30-day ATM IV, RR25, BF25, RR10) is read off one SVI smile per chain, fitted
   to bid/ask mids against its put-call parity forward. Click a ticker for the 3D
-  implied-volatility surface for each of the last three sessions: IV, skew,
+  implied-volatility surface for each session of the week (pick the day at the top of the viewer): IV, skew,
   put − call and the greeks, a timeline through the day, pinned contracts, and
   the underlying's price history.
 - **Eurodollar System Monitor** (`eurodollar.html`): the Treasury curve, TIPS
